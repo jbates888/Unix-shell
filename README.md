@@ -1,4 +1,4 @@
-# CS441/541 Project 2
+# CS441/541 Project 3
 
 ## Author(s):
 
