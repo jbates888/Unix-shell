@@ -1,7 +1,7 @@
 /*
  * Josh Hursey, [YOUR NAME HERE]
  *
- * CS441/541: Project 2
+ * CS441/541: Project 3
  *
  */
 #ifndef SUPPORT_H
