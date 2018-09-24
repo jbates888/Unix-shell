@@ -18,6 +18,11 @@
 /******************************
  * Defines
  ******************************/
+#define TRUE  1
+#define FALSE 0
+
+#define MAX_COMMAND_LINE 1024
+
 #define PROMPT ("mysh$ ")
 
 
