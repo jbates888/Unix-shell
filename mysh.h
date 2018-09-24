@@ -7,7 +7,9 @@
 #ifndef MYSHELL_H
 #define MYSHELL_H
 
-#include "support.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* For fork, exec, sleep */
 #include <sys/types.h>
