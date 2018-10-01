@@ -22,14 +22,9 @@ all: mysh
 #
 # Main shell program
 #
-mysh: mysh.c mysh.h support.o
-	$(CC) -o mysh mysh.c support.o $(CFLAGS)
+mysh: mysh.c mysh.h 
+	$(CC) -o mysh mysh.c  $(CFLAGS)
 
-#
-# Supporting library
-#
-support.o: support.h support.c
-	$(CC) -c -o support.o support.c $(CFLAGS)
 
 #
 # Cleanup the files that we have created
