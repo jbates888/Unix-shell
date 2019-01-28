@@ -1,4 +1,4 @@
-# CS441/541 Project 3
+# CS441/541 Shell Project
 
 ## Author(s):
 
