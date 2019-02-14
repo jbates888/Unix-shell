@@ -7,6 +7,7 @@
 #include "mysh.h"
 
 int main(int argc, char * argv[]) {
+  int ret;
 
     /*
      * Parse Command line arguments to check if this is an interactive or batch
@@ -61,11 +62,7 @@ int main(int argc, char * argv[]) {
     /*
      * Cleanup
      */
-    if( NULL != batch_files) {
-        free(batch_files);
-        batch_files = NULL;
-        num_batch_files = 0;
-    }
+
 
     return 0;
 }
@@ -188,6 +185,12 @@ int builtin_wait(void)
 }
 
 int builtin_fg(void)
+{
+
+    return 0;
+}
+
+int builtin_fg_num(int job_num)
 {
 
     return 0;

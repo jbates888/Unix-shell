@@ -31,7 +31,7 @@ mysh: mysh.c mysh.h
 #
 clean:
 	$(RM) mysh *.o
-	$(RM) -rf *.dSYM
+	$(RM) -rf *.dSYM *~
 
 #
 # Tests

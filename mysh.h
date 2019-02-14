@@ -60,6 +60,11 @@ int total_jobs    = 0;
 int total_jobs_bg = 0;
 int total_history = 0;
 
+/*
+ * Debugging mode
+ */
+int is_debug = TRUE;
+
 /******************************
  * Function declarations
  ******************************/
@@ -164,12 +169,24 @@ int builtin_wait(void);
  * Built-in 'fg' command
  *
  * Parameters:
- *   None, or job id
+ *   None (use default behavior)
  *
  * Returns:
  *   0 on success
  *   Negative value on error
  */
 int builtin_fg(void);
+
+/*
+ * Built-in 'fg' command
+ *
+ * Parameters:
+ *   Job id
+ *
+ * Returns:
+ *   0 on success
+ *   Negative value on error
+ */
+int builtin_fg_num(int job_num);
 
 #endif /* MYSHELL_H */
