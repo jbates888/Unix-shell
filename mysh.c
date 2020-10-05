@@ -111,15 +111,24 @@ int batch_mode(void)
 int interactive_mode(void)
 {
 
-    //do {
+    do {
         /*
          * Print the prompt
          */
-        
+	printf("mysh$ ");
+        char * input = (char *)malloc(256 * sizeof(char));
+	size_t len = 256;
+	const char * exit_cmmd = "exit";
+	getline(&input, &len, stdin);
+	strtok(input, "\n");
+	//printf("%s", input);	 
         /*
          * Read stdin, break out of loop if Ctrl-D
          */
-        
+        if(strcmp(exit_cmmd, input) == 0){
+		exit(0);
+	}
+
 
         /* Strip off the newline */
        
@@ -128,7 +137,7 @@ int interactive_mode(void)
          * Parse and execute the command
          */
        
-    //} while( 1/* end condition */);
+    } while( 1/* end condition */);
 
     /*
      * Cleanup
