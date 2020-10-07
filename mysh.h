@@ -193,4 +193,5 @@ int builtin_fg_num(int job_num);
 char * char_after_space(char * cmmd);
 char * get_second(char * cmmd);
 int get_lenght(char * tmp);
+char * substr(char * src, int start, int end);
 #endif /* MYSHELL_H */

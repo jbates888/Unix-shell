@@ -117,8 +117,8 @@ int interactive_mode(void)
         /*
          * Print the prompt
          */
-	int multiple_jobs = 0;
 	printf("mysh$ ");
+
         char * input = (char *)malloc(256 * sizeof(char));
 	size_t len = 1024;
 	const char * exit_cmmd = "exit";
@@ -128,44 +128,40 @@ int interactive_mode(void)
 	const char * wait = "wait";
 	getline(&input, &len, stdin);
 	strtok(input, "\n");
+	//printf("first input: %s\n", input);
+
+	//if(strcmp(input, exit_cmmd) == 0){
+	//	return 0;	
+	//}
+
 	
-	if(strcmp(input, exit_cmmd) == 0){
-		return 0;	
-	}
 	char * tmp = strdup(input);
+	int i = 0; 
+	int last_stop = 0; 
+	while(tmp[i] != '\0'){
+		char t = tmp[i];
+		char * u = &t;
+		char * job_name;
+		printf("%s\n", u);
+		if(strcmp(u,"&") == 0){
+			job_name = substr(tmp, last_stop, i);
+			printf("job_name : %s\n", job_name);
+			last_stop = i;
+			return 0;
+		} else if (strcmp(u, ";") == 0){
+			job_name = substr(tmp, last_stop, i);
+			last_stop = i;
+		}
+	//	printf("%s\n", u);
+		i++;
+	}
+	return 0;
 	job_t loc_job = {.full_command = input};
 	loc_job.binary = strtok(tmp, " ");
 	launch_job(&loc_job);
 
 
-	total_jobs++;
-	//break apart the list of commands by ;
-	//char * cmmd = strtok(input, " ; ");
-	//while(cmmd != NULL){
-		//check if there are commands to run in the background 
-		//if(strchr(cmmd, '&') != NULL){
-			//do nothing for now
-		//}
-		//printf("%s\n", cmmd);
-	//	job_t * loc_job = (job_t *)malloc(sizeof(job_t));
-	//	loc_job->full_command = cmmd;
-		 
-        //	if(strcmp(exit_cmmd, cmmd) == 0){
-	//		return 0;
-	//	}
-	//	char * tmp = strtok(cmmd, " ");
-	//	if(strcmp(tmp, fg) != 0 && strcmp(tmp, jobs) != 0 && strcmp(tmp, history) != 0 && strcmp(tmp, wait)){
-	//		loc_job->binary = cmmd;
-	//	} else {
-	//		loc_job->binary = NULL;
-	//		loc_job->is_background = FALSE;
-	//	}
-	//	launch_job(loc_job);
-	//	cmmd = strtok(NULL, " ; ");
-	//}
-
-	
-	//printf("%s", input);	 
+	total_jobs++;	 
         /*
          * Read stdin, break out of loop if Ctrl-D
       	*/
@@ -186,6 +182,19 @@ int interactive_mode(void)
      */
 
     return 0;
+}
+
+char * substr(char *src, int start, int end){
+	int len = end - start;
+	char * dest = (char*)malloc(sizeof(char) * (len + 1));
+	int i;
+	for(i = start; i < end && ((*src + i) != '\0'); i++){
+		*dest = *(src + i);
+		dest++;
+	}
+	*dest = '\0';
+	return dest - len;
+
 }
 
 /*
