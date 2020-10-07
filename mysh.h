@@ -192,4 +192,5 @@ int builtin_fg_num(int job_num);
 //parse the command line and split the jobs based on ;
 char * char_after_space(char * cmmd);
 char * get_second(char * cmmd);
+int get_lenght(char * tmp);
 #endif /* MYSHELL_H */

@@ -132,11 +132,10 @@ int interactive_mode(void)
 	if(strcmp(input, exit_cmmd) == 0){
 		return 0;	
 	}
-
-	job_t * loc_job = (job_t *)malloc(sizeof(job_t));
-	loc_job->full_command = input;
-	loc_job->binary = strtok(input, " ");
-	launch_job(loc_job);
+	char * tmp = strdup(input);
+	job_t loc_job = {.full_command = input};
+	loc_job.binary = strtok(tmp, " ");
+	launch_job(&loc_job);
 
 
 	total_jobs++;
@@ -208,47 +207,56 @@ int launch_job(job_t * loc_job)
     /*
      * Some accounting
      */
+	//printf("%s\n", loc_job->full_command);
 	if(loc_job->binary != NULL){
-		
+
 		pid_t c_pid = 0;
 		int status = 0;
 		char **args;
-		int i, wrd;
-		i = 0;
-		wrd = 1;
-		int state = 0;
-		char * tmp = loc_job->binary;
-		while(*tmp){
-			if(*tmp == ' ' || *tmp == '\n' || *tmp == '\t'){
-				state = 0;
-			} else if(state == 0){
-				state = 1;
-				++wrd;
-			}
-			++tmp;
+
+		char * a = strdup(loc_job->full_command);
+		int argc = get_length(a);
+		char * tmp = strtok(loc_job->full_command, " ");
+	
+		args = (char **)malloc(sizeof(char*) * (argc + 1));
+		//args[0] = strdup(loc_job->binary);
+		int i = 0;
+		while(tmp != NULL){
+			args[i] = strdup(tmp);
+			//printf("%s\n", args[i]);
+			tmp = strtok(NULL, " ");
+			i++;
 		}
-		printf("%d\n", wrd);
-		return 0;
-		
-		//char * second_value = get_second(loc_job->full_command);
-		//char * tmp = strtok(loc_job->full_command, " ");	
-		printf("%s\n", tmp);		
+		args[i] = NULL;
+			
 		c_pid = fork();
 		if(c_pid < 0){
-			printf("Fork Failed");
+			//printf("Fork Failed");
 			return -1;
 		} else if(c_pid == 0){
 			execvp(loc_job->binary, args);
-			printf("Exec failed");
+			//printf("Exec failed");
 			exit(-1);
 		} else {
 			waitpid(c_pid, &status, 0);
-			printf("Child finished\n");
+			//printf("Child finished\n");
 		}
 	}
 	
 
     return 0;
+}
+
+
+int get_length(char * tmp){
+	int count = 0;
+	char * token = strtok(tmp, " ");
+	while(token != NULL){
+		count++;
+		token = strtok(NULL, " ");
+	}
+	//printf("%d\n", count);
+	return count;
 }
 
 char * char_after_space(char * cmmd){
