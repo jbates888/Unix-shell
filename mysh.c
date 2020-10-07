@@ -213,33 +213,38 @@ int launch_job(job_t * loc_job)
 		pid_t c_pid = 0;
 		int status = 0;
 		char **args;
-		char * second_value = get_second(loc_job->full_command);
-		printf("%s\n", second_value);
-		if(second_value == NULL){
-			args = (char**)malloc(sizeof(char*) * 2);
-			args[0] = strdup(loc_job->binary);
-			args[1] = NULL;
-		} else {
-			//char * tmp = strchr(loc_job->full_command, ' ') + 1;
-			args = (char **)malloc(sizeof(char *) * 3);
-			args[0] = strdup(loc_job->binary);
-			args[1] = second_value;
-			args[2] = NULL;
-		}
-		
-		
-			c_pid = fork();
-			if(c_pid < 0){
-				printf("Fork Failed");
-				return -1;
-			} else if(c_pid == 0){
-				execvp(loc_job->binary, args);
-				printf("Exec failed");
-				exit(-1);
-			} else {
-				waitpid(c_pid, &status, 0);
-				printf("Child finished\n");
+		int i, wrd;
+		i = 0;
+		wrd = 1;
+		int state = 0;
+		char * tmp = loc_job->binary;
+		while(*tmp){
+			if(*tmp == ' ' || *tmp == '\n' || *tmp == '\t'){
+				state = 0;
+			} else if(state == 0){
+				state = 1;
+				++wrd;
 			}
+			++tmp;
+		}
+		printf("%d\n", wrd);
+		return 0;
+		
+		//char * second_value = get_second(loc_job->full_command);
+		//char * tmp = strtok(loc_job->full_command, " ");	
+		printf("%s\n", tmp);		
+		c_pid = fork();
+		if(c_pid < 0){
+			printf("Fork Failed");
+			return -1;
+		} else if(c_pid == 0){
+			execvp(loc_job->binary, args);
+			printf("Exec failed");
+			exit(-1);
+		} else {
+			waitpid(c_pid, &status, 0);
+			printf("Child finished\n");
+		}
 	}
 	
 
