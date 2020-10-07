@@ -128,11 +128,6 @@ int interactive_mode(void)
 	const char * wait = "wait";
 	getline(&input, &len, stdin);
 	strtok(input, "\n");
-	//printf("first input: %s\n", input);
-
-	//if(strcmp(input, exit_cmmd) == 0){
-	//	return 0;	
-	//}
 
 	
 	char * tmp = strdup(input);
@@ -141,18 +136,22 @@ int interactive_mode(void)
 	while(tmp[i] != '\0'){
 		char t = tmp[i];
 		char * u = &t;
-		char * job_name;
+		char * job_name;	
 		printf("%s\n", u);
 		if(strcmp(u,"&") == 0){
-			job_name = substr(tmp, last_stop, i);
-			printf("job_name : %s\n", job_name);
+			job_name = substr(strdup(tmp), last_stop, i);
+			printf("%s\n", job_name);
+			job_t * loc_job = (job_t*)malloc(sizeof(job_t));
+			loc_job->full_command = job_name;
+			char * job_binary = strtok(job_name, " ");
+			loc_job->binary = job_binary;
+			launch_job(loc_job);
+			//printf("job_name : %s\n", job_name);
 			last_stop = i;
-			return 0;
 		} else if (strcmp(u, ";") == 0){
-			job_name = substr(tmp, last_stop, i);
+			job_name = substr(strdup(tmp), last_stop, i);
 			last_stop = i;
 		}
-	//	printf("%s\n", u);
 		i++;
 	}
 	return 0;
@@ -162,17 +161,6 @@ int interactive_mode(void)
 
 
 	total_jobs++;	 
-        /*
-         * Read stdin, break out of loop if Ctrl-D
-      	*/
-
-
-        /* Strip off the newline */
-       
-
-        /*
-         * Parse and execute the command
-         */
 	
        
     } while( 1/* end condition */);
