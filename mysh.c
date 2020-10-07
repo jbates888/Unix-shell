@@ -4,7 +4,6 @@
  * CS441/541: Project 3
  *
  */
-/////////////
 #include "mysh.h"
 
 int main(int argc, char * argv[]) {
@@ -75,6 +74,9 @@ int parse_args_main(int argc, char **argv)
      * If no command line arguments were passed then this is an interactive
      * mode run.
      */
+	if(argc > 1){
+		is_batch = TRUE;
+	}
 
     /*
      * If command line arguments were supplied then this is batch mode.
@@ -115,19 +117,59 @@ int interactive_mode(void)
         /*
          * Print the prompt
          */
+	int multiple_jobs = 0;
 	printf("mysh$ ");
         char * input = (char *)malloc(256 * sizeof(char));
-	size_t len = 256;
+	size_t len = 1024;
 	const char * exit_cmmd = "exit";
+	const char * fg = "fg";
+	const char * jobs = "jobs";
+	const char * history = "history";
+	const char * wait = "wait";
 	getline(&input, &len, stdin);
 	strtok(input, "\n");
+	
+	if(strcmp(input, exit_cmmd) == 0){
+		return 0;	
+	}
+
+	job_t * loc_job = (job_t *)malloc(sizeof(job_t));
+	loc_job->full_command = input;
+	loc_job->binary = strtok(input, " ");
+	launch_job(loc_job);
+
+
+	total_jobs++;
+	//break apart the list of commands by ;
+	//char * cmmd = strtok(input, " ; ");
+	//while(cmmd != NULL){
+		//check if there are commands to run in the background 
+		//if(strchr(cmmd, '&') != NULL){
+			//do nothing for now
+		//}
+		//printf("%s\n", cmmd);
+	//	job_t * loc_job = (job_t *)malloc(sizeof(job_t));
+	//	loc_job->full_command = cmmd;
+		 
+        //	if(strcmp(exit_cmmd, cmmd) == 0){
+	//		return 0;
+	//	}
+	//	char * tmp = strtok(cmmd, " ");
+	//	if(strcmp(tmp, fg) != 0 && strcmp(tmp, jobs) != 0 && strcmp(tmp, history) != 0 && strcmp(tmp, wait)){
+	//		loc_job->binary = cmmd;
+	//	} else {
+	//		loc_job->binary = NULL;
+	//		loc_job->is_background = FALSE;
+	//	}
+	//	launch_job(loc_job);
+	//	cmmd = strtok(NULL, " ; ");
+	//}
+
+	
 	//printf("%s", input);	 
         /*
          * Read stdin, break out of loop if Ctrl-D
-         */
-        if(strcmp(exit_cmmd, input) == 0){
-		exit(0);
-	}
+      	*/
 
 
         /* Strip off the newline */
@@ -136,6 +178,7 @@ int interactive_mode(void)
         /*
          * Parse and execute the command
          */
+	
        
     } while( 1/* end condition */);
 
@@ -153,11 +196,10 @@ int interactive_mode(void)
 
 int launch_job(job_t * loc_job)
 {
-
     /*
      * Display the job
      */
-
+	
 
     /*
      * Launch the job in either the foreground or background
@@ -166,8 +208,59 @@ int launch_job(job_t * loc_job)
     /*
      * Some accounting
      */
+	if(loc_job->binary != NULL){
+		
+		pid_t c_pid = 0;
+		int status = 0;
+		char **args;
+		char * second_value = get_second(loc_job->full_command);
+		printf("%s\n", second_value);
+		if(second_value == NULL){
+			args = (char**)malloc(sizeof(char*) * 2);
+			args[0] = strdup(loc_job->binary);
+			args[1] = NULL;
+		} else {
+			//char * tmp = strchr(loc_job->full_command, ' ') + 1;
+			args = (char **)malloc(sizeof(char *) * 3);
+			args[0] = strdup(loc_job->binary);
+			args[1] = second_value;
+			args[2] = NULL;
+		}
+		
+		
+			c_pid = fork();
+			if(c_pid < 0){
+				printf("Fork Failed");
+				return -1;
+			} else if(c_pid == 0){
+				execvp(loc_job->binary, args);
+				printf("Exec failed");
+				exit(-1);
+			} else {
+				waitpid(c_pid, &status, 0);
+				printf("Child finished\n");
+			}
+	}
+	
 
     return 0;
+}
+
+char * char_after_space(char * cmmd){
+	char * starting = cmmd;
+	while(*starting != ' '){
+		starting++;
+	}
+	starting++;
+	return starting;
+}
+
+char * get_second(char * cmmd){
+	const char delim[] = " ";
+	char input[255];
+	strcpy(input, cmmd);
+	char * ptr = strtok(input, delim);
+	return strtok(NULL, delim);
 }
 
 int builtin_exit(void)
