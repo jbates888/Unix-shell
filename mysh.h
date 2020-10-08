@@ -189,4 +189,10 @@ int builtin_fg(void);
  */
 int builtin_fg_num(int job_num);
 
+//parse the command line and split the jobs based on ;
+char * char_after_space(char * cmmd);
+char * get_second(char * cmmd);
+int get_length(char * tmp);
+char * substr(char * src, int start, int end);
+void job_creation(char * job_name, int background);
 #endif /* MYSHELL_H */
