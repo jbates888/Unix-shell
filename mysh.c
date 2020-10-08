@@ -131,35 +131,31 @@ int interactive_mode(void)
 
 	
 	char * tmp = strdup(input);
+	char * part_string = strdup(input);
 	int i = 0; 
 	int last_stop = 0; 
 	while(tmp[i] != '\0'){
 		char t = tmp[i];
 		char * u = &t;
 		char * job_name;	
-		printf("%s\n", u);
 		if(strcmp(u,"&") == 0){
-			job_name = substr(strdup(tmp), last_stop, i);
-			printf("%s\n", job_name);
-			job_t * loc_job = (job_t*)malloc(sizeof(job_t));
-			loc_job->full_command = job_name;
-			char * job_binary = strtok(job_name, " ");
-			loc_job->binary = job_binary;
-			launch_job(loc_job);
-			//printf("job_name : %s\n", job_name);
-			last_stop = i;
+			part_string = substr(strdup(tmp), last_stop, i);
+			last_stop = i + 1;
+			job_creation(strdup(part_string), 1);
 		} else if (strcmp(u, ";") == 0){
-			job_name = substr(strdup(tmp), last_stop, i);
-			last_stop = i;
+			part_string = substr(strdup(tmp), last_stop, i);
+			last_stop = i + 1;
+			job_creation(strdup(part_string), 0);
 		}
 		i++;
 	}
-	return 0;
-	job_t loc_job = {.full_command = input};
-	loc_job.binary = strtok(tmp, " ");
-	launch_job(&loc_job);
-
-
+	part_string = substr(strdup(tmp), last_stop, i);
+	printf("Before call: %s\n", part_string);	
+	int leftover = get_length(strdup(part_string));
+	if(leftover != 0){
+		printf("Before call: %s\n", part_string);	
+		job_creation(strdup(part_string), 0);
+	}
 	total_jobs++;	 
 	
        
@@ -170,6 +166,15 @@ int interactive_mode(void)
      */
 
     return 0;
+}
+
+void job_creation(char * job_name, int background){
+	printf("Job creation: %s\n", job_name);
+	job_t * loc_job = (job_t *)malloc(sizeof(job_t));
+	loc_job->full_command = strdup(job_name);
+	loc_job->binary = strtok(strdup(job_name), " ");
+	loc_job->is_background = background;
+	launch_job(loc_job);
 }
 
 char * substr(char *src, int start, int end){
@@ -263,14 +268,6 @@ char * char_after_space(char * cmmd){
 	}
 	starting++;
 	return starting;
-}
-
-char * get_second(char * cmmd){
-	const char delim[] = " ";
-	char input[255];
-	strcpy(input, cmmd);
-	char * ptr = strtok(input, delim);
-	return strtok(NULL, delim);
 }
 
 int builtin_exit(void)
