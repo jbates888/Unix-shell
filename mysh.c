@@ -69,13 +69,36 @@ int main(int argc, char * argv[]) {
 
 int parse_args_main(int argc, char **argv)
 {
+    int i;
+    FILE * fp;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
 
     /*
      * If no command line arguments were passed then this is an interactive
      * mode run.
      */
+
+    /* Not sure if this can be here or if it has be but in batch_mode()*/
+        i = 1;
+        /*if there is more then one arg passed in, its batch mode*/
 	if(argc > 1){
+            /*loop through each argv*/
+            while(NULL != argv[i] && strstr(argv[i], ".txt") != NULL){
 		is_batch = TRUE;
+                /*open the file*/
+                fp = fopen(argv[i], "r");
+                if(fp == NULL){
+                    exit(1);
+                }
+                /*read each line in the current file*/
+                while((read = getline(&line, &len, fp)) != -1){
+                    printf("%s", line);
+                }
+                i++;
+                fclose(fp);
+            }
 	}
 
     /*
@@ -87,7 +110,7 @@ int parse_args_main(int argc, char **argv)
 
 int batch_mode(void)
 {
-
+   
     /*
      * For each file...
      */
