@@ -8,7 +8,9 @@
 
 int main(int argc, char * argv[]) {
   int ret;
-
+  history = NULL;
+  his_index = 0;
+  his_count = 0;
     /*
      * Parse Command line arguments to check if this is an interactive or batch
      * mode run.
@@ -144,11 +146,6 @@ int interactive_mode(void)
 
         char * input = (char *)malloc(256 * sizeof(char));
 	size_t len = 1024;
-	const char * exit_cmmd = "exit";
-	const char * fg = "fg";
-	const char * jobs = "jobs";
-	const char * history = "history";
-	const char * wait = "wait";
 	getline(&input, &len, stdin);
 	strtok(input, "\n");
 
@@ -163,24 +160,62 @@ int interactive_mode(void)
 		char * job_name;	
 		if(strcmp(u,"&") == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
-			last_stop = i + 1;
-			job_creation(strdup(part_string), 1);
+			if(history == NULL){
+				history = (char**)malloc(sizeof(char*));
+				his_count = 1;
+			} else {
+				history = (char**)realloc(history, sizeof(history) * (his_count + 1));
+				his_count++;
+			}
+			his_index++;
+			//char * part_temp = strtok(strdup(part_string), " ");
+			if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+				add_history(strdup(part_string), 0, his_index-1);
+				job_creation(strdup(part_string), 1, NULL);
+			} else {
+				add_history(strdup(part_string), 1, his_index-1);
+				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "));
+			}
+			last_stop = i + 1;		
 		} else if (strcmp(u, ";") == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
+			if(history == NULL){
+				history = (char**)malloc(sizeof(char*));
+				his_count = 1;
+			} else {
+				history = (char**)realloc(history, sizeof(history) * (his_count + 1));
+				his_count++;
+			}
+			his_index++;
+			add_history(strdup(part_string), 0, his_index-1);
+			if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+				job_creation(strdup(part_string), 0, NULL);
+			} else {
+				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "));
+			}
 			last_stop = i + 1;
-			job_creation(strdup(part_string), 0);
 		}
 		i++;
 	}
-	part_string = substr(strdup(tmp), last_stop, i);
-	printf("Before call: %s\n", part_string);	
+	part_string = substr(strdup(tmp), last_stop, i);	
 	int leftover = get_length(strdup(part_string));
 	if(leftover != 0){
-		printf("Before call: %s\n", part_string);	
-		job_creation(strdup(part_string), 0);
+		if(history == NULL){
+			history = (char**)malloc(sizeof(char*));
+			his_count = 1;
+		} else {
+			history = (char**)realloc(history, sizeof(history) * (his_count + 1));
+			his_count++;
+		}
+		his_index++;
+		add_history(strdup(part_string), 0, his_index-1);
+		if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+			job_creation(strdup(part_string), 0, NULL);
+		} else {
+			job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "));
+		}
 	}
-	total_jobs++;	 
-	
+	total_jobs++;	 	
        
     } while( 1/* end condition */);
 
@@ -191,11 +226,18 @@ int interactive_mode(void)
     return 0;
 }
 
-void job_creation(char * job_name, int background){
-	printf("Job creation: %s\n", job_name);
+void add_history(char * cmmd, int background, int his_size){
+	if(background == 1){
+		strncat(cmmd, "&", 1);
+	}
+	history[his_size] = cmmd;
+}
+
+void job_creation(char * job_name, int background, char * binary){
+	//printf("Job creation: %s\n", job_name);
 	job_t * loc_job = (job_t *)malloc(sizeof(job_t));
 	loc_job->full_command = strdup(job_name);
-	loc_job->binary = strtok(strdup(job_name), " ");
+	loc_job->binary = binary;
 	loc_job->is_background = background;
 	launch_job(loc_job);
 }
@@ -213,6 +255,20 @@ char * substr(char *src, int start, int end){
 
 }
 
+int check_builtin(char * command){
+	const char * exit_cmmd = "exit";
+	const char * fg = "fg";
+	const char * jobs = "jobs";
+	const char * history = "history";
+	const char * wait = "wait";
+	
+	if(strcmp(command, fg) == 0 || strcmp(command, jobs) == 0 || strcmp(command, history) == 0 || strcmp(command, wait) == 0){
+		return 1;
+	}
+	
+	return 0;
+}
+
 /*
  * You will want one or more helper functions for parsing the commands 
  * and then call the following functions to execute them
@@ -224,6 +280,11 @@ int launch_job(job_t * loc_job)
      * Display the job
      */
 	
+	const char * exit_cmmd = "exit";
+	const char * fg = "fg";
+	const char * jobs = "jobs";
+	const char * history = "history";
+	const char * wait = "wait";
 
     /*
      * Launch the job in either the foreground or background
@@ -248,7 +309,6 @@ int launch_job(job_t * loc_job)
 		int i = 0;
 		while(tmp != NULL){
 			args[i] = strdup(tmp);
-			//printf("%s\n", args[i]);
 			tmp = strtok(NULL, " ");
 			i++;
 		}
@@ -256,15 +316,16 @@ int launch_job(job_t * loc_job)
 			
 		c_pid = fork();
 		if(c_pid < 0){
-			//printf("Fork Failed");
 			return -1;
 		} else if(c_pid == 0){
 			execvp(loc_job->binary, args);
-			//printf("Exec failed");
 			exit(-1);
 		} else {
 			waitpid(c_pid, &status, 0);
-			//printf("Child finished\n");
+		}
+	} else {
+		if(strcmp(history, strtok(strdup(loc_job->full_command), " ")) == 0){
+			builtin_history();
 		}
 	}
 	
@@ -295,7 +356,6 @@ char * char_after_space(char * cmmd){
 
 int builtin_exit(void)
 {
-
     return 0;
 }
 
@@ -307,8 +367,11 @@ int builtin_jobs(void)
 
 int builtin_history(void)
 {
-
-    return 0;
+	int i;
+	for(i = 0; i < his_index; i++){
+		printf("[%d] %s\n", i + 1, history[i]);
+	}
+	return 0;
 }
 
 int builtin_wait(void)
