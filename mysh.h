@@ -46,7 +46,8 @@ typedef struct job_t job_t;
 /******************************
  * Global Variables
  ******************************/
-char ** history; 
+char ** history;
+char ** file_line_arr; 
 int his_index;
 int his_count;
 /*
@@ -196,4 +197,5 @@ char * substr(char * src, int start, int end);
 void job_creation(char * job_name, int background, char * binary);
 int check_builtin(char * command);
 void add_history(char * cmmd, int background, int his_size);
+
 #endif /* MYSHELL_H */
