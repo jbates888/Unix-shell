@@ -40,6 +40,8 @@ struct job_t {
     char **argv;
     int is_background;
     char * binary;
+    char * file_redirect;
+    int redirect;
 };
 typedef struct job_t job_t;
 
@@ -194,8 +196,8 @@ int builtin_fg_num(int job_num);
 
 int get_length(char * tmp);
 char * substr(char * src, int start, int end);
-void job_creation(char * job_name, int background, char * binary);
+void job_creation(char * job_name, int background, char * binary, int redirection, char * filename);
 int check_builtin(char * command);
 void add_history(char * cmmd, int background, int his_size);
-
+int file_redir(char * cmmd);
 #endif /* MYSHELL_H */
