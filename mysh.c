@@ -184,12 +184,35 @@ int interactive_mode(void)
 			}
 			his_index++;
 			//char * part_temp = strtok(strdup(part_string), " ");
-			if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+			if(file_redir(strdup(part_string)) == 1){	
+				total_history++;
+				total_jobs_bg++;
+				total_jobs++;
+				char * part_tmp = strdup(part_string);
+				char * file1 = strtok(part_tmp, ">");
+				char * file2 = strtok(NULL, ">");
+				job_creation(strdup(part_string), 0, file1, 1, file2); 	
+			} else if(file_redir(strdup(part_string)) == 2){	
+				total_history++;
+				total_jobs_bg++;
+				total_jobs++;
+				char * part_tmp = strdup(part_string);
+				char * file1 = strtok(part_tmp, "<");
+				char * file2 = strtok(NULL, "<");
+				job_creation(strdup(part_string), 0, file1, 1, file2); 	
+			} else if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+				total_history++;
+				if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
+					return builtin_exit();
+				} 
 				add_history(strdup(part_string), 0, his_index-1);
-				job_creation(strdup(part_string), 1, NULL);
+				job_creation(strdup(part_string), 1, NULL, 0, NULL);
 			} else {
+				total_history++;
+				total_jobs_bg++;
+				total_jobs++;
 				add_history(strdup(part_string), 1, his_index-1);
-				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "));
+				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0 , NULL);
 			}
 			last_stop = i + 1;		
 		} else if (strcmp(u, ";") == 0){
@@ -203,16 +226,31 @@ int interactive_mode(void)
 			}
 			his_index++;
 			add_history(strdup(part_string), 0, his_index-1);
-			if(check_builtin(strtok(strdup(part_string), " ")) == 1){
-				job_creation(strdup(part_string), 0, NULL);
+			total_history++;
+			if(file_redir(strdup(part_string)) == 1){	
+				char * part_tmp = strdup(part_string);
+				char * file1 = strtok(part_tmp, ">");
+				char * file2 = strtok(NULL, ">");
+				job_creation(strdup(part_string), 0, file1, 1, file2); 	
+			} else if(file_redir(strdup(part_string)) == 2){	
+				char * part_tmp = strdup(part_string);
+				char * file1 = strtok(part_tmp, "<");
+				char * file2 = strtok(NULL, "<");
+				job_creation(strdup(part_string), 0, file1, 1, file2); 	
+			} else if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+				if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
+					return builtin_exit();
+				}
+				job_creation(strdup(part_string), 0, NULL, 0 , NULL);
 			} else {
-				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "));
+				total_jobs++;
+				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0, NULL);
 			}
 			last_stop = i + 1;
 		}
 		i++;
 	}
-	part_string = substr(strdup(tmp), last_stop, i);	
+	part_string = substr(strdup(tmp), last_stop, i);
 	int leftover = get_length(strdup(part_string));
 	if(leftover != 0){
 		if(history == NULL){
@@ -224,13 +262,27 @@ int interactive_mode(void)
 		}
 		his_index++;
 		add_history(strdup(part_string), 0, his_index-1);
-		if(check_builtin(strtok(strdup(part_string), " ")) == 1){
-			job_creation(strdup(part_string), 0, NULL);
+		total_history++;
+		if(file_redir(strdup(part_string)) == 1){	
+			char * part_tmp = strdup(part_string);
+			char * file1 = strtok(part_tmp, ">");
+			char * file2 = strtok(NULL, ">");
+			job_creation(strdup(part_string), 0, file1, 1, file2); 	
+		} else if(file_redir(strdup(part_string)) == 2){	
+			char * part_tmp = strdup(part_string);
+			char * file1 = strtok(part_tmp, "<");
+			char * file2 = strtok(NULL, "<");
+			job_creation(strdup(part_string), 0, file1, 1, file2); 	
+		} else if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+			if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
+				return builtin_exit();
+			}
+			job_creation(strdup(part_string), 0, NULL, 0, NULL);
 		} else {
-			job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "));
+			total_jobs++;
+			job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0 ,NULL);
 		}
-	}
-	total_jobs++;	 	
+	}	 	
        
     } while( 1/* end condition */);
 
@@ -241,7 +293,11 @@ int interactive_mode(void)
     return 0;
 }
 
-
+int file_redir(char * cmmd){
+	if(strchr(strdup(cmmd), '>')) return 1;
+	if(strchr(strdup(cmmd), '>')) return 2;
+	return 0;
+}
 void add_history(char * cmmd, int background, int his_size){
 	if(background == 1){
 		strncat(cmmd, "&", 1);
@@ -249,7 +305,7 @@ void add_history(char * cmmd, int background, int his_size){
 	history[his_size] = cmmd;
 }
 
-void job_creation(char * job_name, int background, char * binary){
+void job_creation(char * job_name, int background, char * binary, int redirection, char * filename){
 	//printf("Job creation: %s\n", job_name);
 	job_t * loc_job = (job_t *)malloc(sizeof(job_t));
 	loc_job->full_command = strdup(job_name);
@@ -278,7 +334,7 @@ int check_builtin(char * command){
 	const char * history = "history";
 	const char * wait = "wait";
 	
-	if(strcmp(command, fg) == 0 || strcmp(command, jobs) == 0 || strcmp(command, history) == 0 || strcmp(command, wait) == 0){
+	if(strcmp(command, fg) == 0 || strcmp(command, jobs) == 0 || strcmp(command, history) == 0 || strcmp(command, wait) == 0 || strcmp(command, exit_cmmd) == 0){
 		return 1;
 	}
 	
@@ -342,6 +398,8 @@ int launch_job(job_t * loc_job)
 	} else {
 		if(strcmp(history, strtok(strdup(loc_job->full_command), " ")) == 0){
 			builtin_history();
+		} else if (strcmp(exit_cmmd, strtok(strdup(loc_job->full_command), " ")) == 0){
+			builtin_exit();
 		}
 	}
 	
