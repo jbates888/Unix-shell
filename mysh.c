@@ -267,6 +267,8 @@ int interactive_mode(void)
 			char * part_tmp = strdup(part_string);
 			char * file1 = strtok(part_tmp, ">");
 			char * file2 = strtok(NULL, ">");
+			//printf("%s\n", file1);
+			//return 0;
 			job_creation(strdup(part_string), 0, file1, 1, file2); 	
 		} else if(file_redir(strdup(part_string)) == 2){	
 			char * part_tmp = strdup(part_string);
@@ -295,7 +297,7 @@ int interactive_mode(void)
 
 int file_redir(char * cmmd){
 	if(strchr(strdup(cmmd), '>')) return 1;
-	if(strchr(strdup(cmmd), '>')) return 2;
+	if(strchr(strdup(cmmd), '<')) return 2;
 	return 0;
 }
 void add_history(char * cmmd, int background, int his_size){
@@ -311,6 +313,8 @@ void job_creation(char * job_name, int background, char * binary, int redirectio
 	loc_job->full_command = strdup(job_name);
 	loc_job->binary = binary;
 	loc_job->is_background = background;
+	loc_job->redirect = redirection;
+	loc_job->file_redirect = filename;	
 	launch_job(loc_job);
 }
 
@@ -367,33 +371,47 @@ int launch_job(job_t * loc_job)
      */
 	//printf("%s\n", loc_job->full_command);
 	if(loc_job->binary != NULL){
-
+		//printf("%s\n", loc_job->binary);
+		//return 0;
 		pid_t c_pid = 0;
 		int status = 0;
 		char **args;
-
-		char * a = strdup(loc_job->full_command);
-		int argc = get_length(a);
-		char * tmp = strtok(loc_job->full_command, " ");
+		char * a;
+		int file_des = 0;
+		int out_saved = dup(STDOUT_FILENO);
+		if(loc_job->redirect != 0){
+			a = strtok(strdup(loc_job->full_command), ">");
+		} else {
+			a = strdup(loc_job->full_command);
+		}
+		int argc = get_length(strdup(a));
+		char * tmp = strtok(a, " ");
 	
 		args = (char **)malloc(sizeof(char*) * (argc + 1));
 		//args[0] = strdup(loc_job->binary);
 		int i = 0;
 		while(tmp != NULL){
 			args[i] = strdup(tmp);
+			//printf("%s\n", args[i]);
 			tmp = strtok(NULL, " ");
 			i++;
 		}
-		args[i] = NULL;
-			
-		c_pid = fork();
+		args[i] = NULL;	
+		c_pid = fork();		
 		if(c_pid < 0){
 			return -1;
 		} else if(c_pid == 0){
+			if(loc_job->redirect == 1){
+				//printf("%s\n", loc_job->file_redirect);
+				file_des = open(remove_Spaces(strdup(loc_job->file_redirect)), O_RDWR);
+				dup2(file_des, STDOUT_FILENO);
+				//printf("%d\n", file_des);
+				close(file_des);
+			}
 			execvp(loc_job->binary, args);
-			exit(-1);
-		} else {
+		}  else {
 			waitpid(c_pid, &status, 0);
+			dup2(out_saved, STDOUT_FILENO);
 		}
 	} else {
 		if(strcmp(history, strtok(strdup(loc_job->full_command), " ")) == 0){
@@ -405,6 +423,18 @@ int launch_job(job_t * loc_job)
 	
 
     return 0;
+}
+
+char * remove_Spaces(char * tmp){
+	int count = 0;
+	int i;
+	for(i = 0; tmp[i]; i++){
+		if(tmp[i] != ' '){
+			tmp[count++] = tmp[i];
+		}
+	}
+	tmp[count] = '\0';
+	return tmp;
 }
 
 

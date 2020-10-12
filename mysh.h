@@ -14,6 +14,7 @@
 /* For fork, exec, sleep */
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 /* For waitpid */
 #include <sys/wait.h>
 
@@ -200,4 +201,5 @@ void job_creation(char * job_name, int background, char * binary, int redirectio
 int check_builtin(char * command);
 void add_history(char * cmmd, int background, int his_size);
 int file_redir(char * cmmd);
+char * remove_Spaces(char * tmp);
 #endif /* MYSHELL_H */
