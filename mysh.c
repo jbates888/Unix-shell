@@ -265,10 +265,12 @@ int interactive_mode(void)
 		total_history++;
 		if(file_redir(strdup(part_string)) == 1){	
 			char * part_tmp = strdup(part_string);
-			char * file1 = strtok(part_tmp, ">");
+			char * file1 = strtok(strdup(part_tmp), ">");
 			char * file2 = strtok(NULL, ">");
-			//printf("%s\n", file1);
+			printf("%s\n", file1);
+			printf("%s\n", file2);
 			//return 0;
+			//printf("before job: %s\n", part_tmp);
 			job_creation(strdup(part_string), 0, file1, 1, file2); 	
 		} else if(file_redir(strdup(part_string)) == 2){	
 			char * part_tmp = strdup(part_string);
@@ -386,33 +388,42 @@ int launch_job(job_t * loc_job)
 		}
 		int argc = get_length(strdup(a));
 		char * tmp = strtok(a, " ");
-	
+		//printf("a before: %s\n", a);	
 		args = (char **)malloc(sizeof(char*) * (argc + 1));
 		//args[0] = strdup(loc_job->binary);
 		int i = 0;
 		while(tmp != NULL){
 			args[i] = strdup(tmp);
-			//printf("%s\n", args[i]);
+			printf("%s\n", args[i]);
 			tmp = strtok(NULL, " ");
 			i++;
 		}
-		args[i] = NULL;	
+		args[i] = NULL;
+		printf("output file: %s\n", loc_job->file_redirect);	
 		c_pid = fork();		
 		if(c_pid < 0){
 			return -1;
 		} else if(c_pid == 0){
+			//check if we are changing output of the call
 			if(loc_job->redirect == 1){
-				//printf("%s\n", loc_job->file_redirect);
-				file_des = open(remove_Spaces(strdup(loc_job->file_redirect)), O_RDWR);
+			//	printf("%s\n", loc_job->file_redirect);
+				//get the file with all unnecessary spaces removed
+				char * nospace_file = remove_Spaces(strdup(loc_job->file_redirect));
+				printf("no spaces:%s\n", nospace_file);
+				//printf("%s\n", nospace_file);
+				//file descriptor for the output file
+				file_des = open(nospace_file, O_RDWR);
+				//change output destination
 				dup2(file_des, STDOUT_FILENO);
-				//printf("%d\n", file_des);
+				//close the file descriptor 
 				close(file_des);
 			}
 			execvp(loc_job->binary, args);
 		}  else {
 			waitpid(c_pid, &status, 0);
-			dup2(out_saved, STDOUT_FILENO);
+			//dup2(out_saved, STDOUT_FILENO);
 		}
+		//dup2(out_saved, STDOUT_FILENO);
 	} else {
 		if(strcmp(history, strtok(strdup(loc_job->full_command), " ")) == 0){
 			builtin_history();
@@ -426,6 +437,7 @@ int launch_job(job_t * loc_job)
 }
 
 char * remove_Spaces(char * tmp){
+	//printf("Here\n");
 	int count = 0;
 	int i;
 	for(i = 0; tmp[i]; i++){
