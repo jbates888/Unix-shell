@@ -43,6 +43,8 @@ struct job_t {
     char * binary;
     char * file_redirect;
     int redirect;
+    int done;
+    pid_t  pid;
 };
 typedef struct job_t job_t;
 
@@ -53,6 +55,7 @@ char ** history;
 char ** file_line_arr; 
 int his_index;
 int his_count;
+//int * jobs;
 /*
  * Interactive or batch mode
  */
@@ -121,7 +124,7 @@ int interactive_mode(void);
  *   0 on success
  *   Negative value on error 
  */
-int launch_job(job_t * loc_job);
+int launch_job(job_t * loc_job, int * jobs);
 
 /*
  * Built-in 'exit' command
@@ -197,7 +200,7 @@ int builtin_fg_num(int job_num);
 
 int get_length(char * tmp);
 char * substr(char * src, int start, int end);
-void job_creation(char * job_name, int background, char * binary, int redirection, char * filename);
+void job_creation(char * job_name, int background, char * binary, int redirection, char * filename, int * jobs);
 int check_builtin(char * command);
 void add_history(char * cmmd, int background, int his_size);
 int file_redir(char * cmmd);
