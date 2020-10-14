@@ -459,7 +459,7 @@ int launch_job(job_t * loc_job)
 		//lo/c_job->pid = c_pid;
 		//printf("job pid: %d\n", loc_job->pid);
 		jobs[his_count - 1].pid = c_pid;
-		printf("job pid: %d\n", jobs[his_count - 1].pid);
+		//printf("job pid: %d\n", jobs[his_count - 1].pid);
 	//	add_history(loc_job);
 		if(c_pid < 0){
 			return -1;
@@ -579,13 +579,11 @@ int builtin_history(void)
 int builtin_wait(void)
 {
 	int i;
-	printf("in wait");
 	int status = 0;
 	for(i = 0; i < his_index; i++){
 		if(jobs[i].is_background == 1){
 			if(jobs[i].done == 0){
-				printf("here");
-				waitpid((pid_t)jobs[i].pid, &status, WNOHANG);
+				waitpid((pid_t)jobs[i].pid, &status, 0);
 			}
 		}
 	}
