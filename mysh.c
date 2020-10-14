@@ -219,13 +219,13 @@ int interactive_mode(void)
 					return builtin_exit();
 				} 
 		//		add_history(strdup(part_string), 0, his_index-1);
-				job_creation(strdup(part_string), 0, NULL, 0, NULL);
+				job_creation(strdup(part_string), 0, " ", 0, " ");
 			} else {
 				total_history++;
 				total_jobs_bg++;
 				total_jobs++;
 		//		add_history(strdup(part_string), 1, his_index-1);
-				job_creation(strdup(part_string), 1, strtok(strdup(part_string), " "), 0 , NULL);
+				job_creation(strdup(part_string), 1, strtok(strdup(part_string), " "), 0 , " ");
 			}
 			last_stop = i + 1;		
 		} else if (strcmp(u, ";") == 0){
@@ -260,10 +260,10 @@ int interactive_mode(void)
 				if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
 					return builtin_exit();
 				}
-				job_creation(strdup(part_string), 0, NULL, 0 , NULL);
+				job_creation(strdup(part_string), 0, " ", 0 , " ");
 			} else {
 				total_jobs++;
-				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0, NULL);
+				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0, " ");
 			}
 			last_stop = i + 1;
 		}
@@ -510,6 +510,8 @@ int launch_job(job_t * loc_job)
 			builtin_jobs();
 		} else if(strcmp(wait, strtok(strdup(loc_job->full_command), " ")) == 0){
 			builtin_wait();
+		} else if(strcmp(fg, strtok(strdup(loc_job->full_command), " ")) == 0){
+			builtin_fg();
 		}
 	}
 	
@@ -553,13 +555,28 @@ char * char_after_space(char * cmmd){
 
 int builtin_exit(void)
 {
-	builtin_wait();
+    builtin_wait();
     return 0;
 }
 
 int builtin_jobs(void)
 {
-
+    	int i;
+	int status = 0;
+	for(i = 0; i < his_index; i++){
+		jobs[i].id = i;
+		if(jobs[i].is_background == 1){
+			if(jobs[i].done == 0){
+				if(waitpid((pid_t)jobs[i].pid, &status, WNOHANG) == 0){
+					jobs[i].done = 0;
+					printf("[%d] Running %s\n", jobs[i].id, jobs[i].full_command);
+				} else {
+					jobs[i].done = 1;
+					printf("[%d] Done %s\n", jobs[i].id, jobs[i].full_command);
+				}
+			} 
+		}
+	}
     return 0;
 }
 
@@ -590,14 +607,52 @@ int builtin_wait(void)
     return 0;
 }
 
+int getVal(char * cmmd){
+	char * tmp = strtok(cmmd, " ");
+	char * val = strtok(NULL, " ");
+	char vals[1]; 
+	strcpy(vals, val);
+	return vals[0] - '0';
+	
+}
 int builtin_fg(void)
 {
+	//printf("here");
+	int status = 0;
+	if(get_length(strdup(jobs[his_count - 1].full_command)) == 2){ 
+		int val = getVal(strdup(jobs[his_count - 1].full_command));
+		if(jobs[val].done == 0){
+			waitpid((pid_t)jobs[his_count - 1].pid, &status, 0);
+		} else {
+			printf("Job has completed\n");
+		}
+	} else {
+		//printf("here\n");
+		int i;
+		int index = 0;
+		int found_background = 0;
+		for(i = 0; i < his_index; i++){
+			if(jobs[i].is_background == 1){
+				if(jobs[i].done == 0){
+					found_background = 1;
+					index = i;
+				}
+			}
+		}
+		//printf("p\n");
+		if(found_background == 1){
+		//	printf("waiting");
+			waitpid((pid_t)jobs[index].pid, &status, 0);
+		} else {
+			printf("Job has completed\n");
+		}
 
+
+	}
     return 0;
 }
 
 int builtin_fg_num(int job_num)
 {
-
     return 0;
 }

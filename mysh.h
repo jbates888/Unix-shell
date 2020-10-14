@@ -69,6 +69,7 @@ int total_jobs    = 0;
 int total_jobs_bg = 0;
 int total_history = 0;
 job_t * jobs;
+int count = 0;
 /*
  * Debugging mode
  */
