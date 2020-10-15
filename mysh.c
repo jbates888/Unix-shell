@@ -56,10 +56,6 @@ int main(int argc, char * argv[]) {
         return -1;
     }
 
-	//int i;
-	//for(i = 0; i < his_index - 1; i++){
-	//	printf("%d\n", jobs[i]);
-	//}
     /*
      * Display counts
      */
@@ -159,7 +155,6 @@ int batch_mode(void)
 
 int interactive_mode(void)
 {
-//	int * jobs;
     do {
         /*
          * Print the prompt
@@ -172,7 +167,9 @@ int interactive_mode(void)
 	getline(&input, &len, stdin);
         /*remove the next line char from the input*/
 	strtok(input, "\n");
-
+	if(strlen(strdup(input)) == 1){
+		continue;
+	}
 	/*create a temp veriable for the input*/
 	char * tmp = strdup(input);
 	char * part_string = strdup(input);
@@ -186,21 +183,7 @@ int interactive_mode(void)
                 /*handle the backround case if & is found*/	
 		if(strcmp(u,"&") == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
-//			if(jobs == NULL){
-//				jobs = (job_t *)malloc(sizeof(job_t));
-//				his_count = 1;
-//			} else {
-//				jobs = (job_t *)realloc(jobs, sizeof(jobs) * (his_count + 1));
-//				his_count++;
-//			}
-			//if(jobs == NULL){
-			//	jobs = (int*)malloc(sizeof(int));
-			//} else {
-			//	jobs = (int*)realloc(jobs, sizeof(jobs) * (his_count) + 1);
-			//	his_count++;
-			//}
 			his_index++;
-			//char * part_temp = strtok(strdup(part_string), " ");
 			if(file_redir(strdup(part_string)) == 1){	
 				total_history++;
 				total_jobs_bg++;
@@ -222,34 +205,18 @@ int interactive_mode(void)
 				if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
 					return builtin_exit();
 				} 
-		//		add_history(strdup(part_string), 0, his_index-1);
 				job_creation(strdup(part_string), 0, " ", 0, " ");
 			} else {
 				total_history++;
 				total_jobs_bg++;
 				total_jobs++;
-		//		add_history(strdup(part_string), 1, his_index-1);
 				job_creation(strdup(part_string), 1, strtok(strdup(part_string), " "), 0 , " ");
 			}
 			last_stop = i + 1;		
                         /*handle the case of more then one command on the same line*/
 		} else if (strcmp(u, ";") == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
-//			if(jobs == NULL){
-//				jobs = (job_t *)malloc(sizeof(job_t));
-//				his_count = 1;
-//			} else {
-//				jobs  = (job_t *)realloc(jobs, sizeof(jobs) * (his_count + 1));
-//				his_count++;
-//			}
-			//if(jobs == NULL){
-			//	jobs = (int*)malloc(sizeof(int));
-			//} else {
-			//	jobs = (int*)realloc(jobs, sizeof(jobs) * (his_count) + 1);
-			//	his_count++;
-			//}
 			his_index++;
-		//	add_history(strdup(part_string), 0, his_index-1);
 			total_history++;
                         /*check for file redirection*/
 			if(file_redir(strdup(part_string)) == 1){	
@@ -279,24 +246,9 @@ int interactive_mode(void)
 	part_string = substr(strdup(tmp), last_stop, i);
 	int leftover = get_length(strdup(part_string));
 	if(leftover != 0){
-		//if(jobs == NULL){
-		//	jobs = (job_t *)malloc(sizeof(job_t));
-		//	his_count = 1;
-		//} else {
-		//	jobs = (job_t *)realloc(jobs, sizeof(jobs) * (his_count + 1));
-		//	his_count++;
-		//}
-		//if(jobs == NULL){
-		//	jobs = (int*)malloc(sizeof(int));
-		//} else {				
-		//	jobs = (int*)realloc(jobs, sizeof(jobs) * (his_count) + 1);
-		//	his_count++;
-		//}
 		his_index++;
-		//add_history(strdup(part_string), 0, his_index-1);
 		total_history++;
-		if(file_redir(strdup(part_string)) == 1){
-			//printf("here");	
+		if(file_redir(strdup(part_string)) == 1){	
 			char * part_tmp = strdup(part_string);
 			char * file1 = strtok(strdup(part_tmp), ">");
 			char * file2 = strtok(NULL, ">");
@@ -315,7 +267,6 @@ int interactive_mode(void)
 			total_jobs++;
 			job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0 ," ");
 		}
-		//printf("%d\n", jobs[his_index - 1]);
 	}	 	
        
     } while( 1/* end condition */);
@@ -340,15 +291,8 @@ int file_redir(char * cmmd){
  * Helper function for adding to the history array
  */
 void add_history(job_t * loc_job){
-	//int i = sizeof(job_t)/ sizeof(loc_job);
-	//printf("%d\n", i);
-	//	if(jobs == NULL){
-	//		jobs = (job_t *)malloc(sizeof(loc_job));
-	//		his_count = 1;
-	//	} else {
-			jobs = (job_t *)realloc(jobs, sizeof(jobs) * (his_count + 1) * sizeof(job_t));
-			his_count++;
-	//	}
+	jobs = (job_t *)realloc(jobs, sizeof(jobs) * (his_count + 1) * sizeof(job_t));
+	his_count++;
 	job_t * tmp = (job_t*)malloc(sizeof(job_t));
 	memcpy(tmp, loc_job, sizeof(job_t));
 	jobs[his_count - 1].full_command = tmp->full_command;
@@ -357,24 +301,14 @@ void add_history(job_t * loc_job){
 	jobs[his_count - 1].redirect = tmp->redirect;
 	jobs[his_count - 1].file_redirect = tmp->file_redirect;
 	jobs[his_count - 1].done = tmp->done;
-	//jobs[his_count - 1].pid = tmp->pid;
-	//printf("h pid: %d\n", jobs[his_count - 1].pid);
-	//jobs[his_count - 1].pid = tmp->pid;
 	jobs[his_count - 1].id = 0;
 }
 
-/*
- * Helper function for adding a job
- */
-void add_job(int* tmp){
-	//jobs[his_index - 1] = *tmp;
-}
 
 /*
  * Function to create a job using the parameters passed in
  */
 void job_creation(char * job_name, int background, char * binary, int redirection, char * filename){
-	//printf("Job creation: %s\n", job_name);
         /*set the job's attributes*/
 	job_t * loc_job = (job_t *)malloc(sizeof(job_t));
 	loc_job->full_command = strdup(job_name);
@@ -382,13 +316,11 @@ void job_creation(char * job_name, int background, char * binary, int redirectio
 	loc_job->is_background = background;
 	loc_job->redirect = redirection;
 	loc_job->file_redirect = filename;
-	//printf("%s\n", filename);
 	loc_job->done = 0;
 	loc_job->pid = 0;
-	//job_t * tmp = (job_t *)malloc(sizeof(job_t));
-	//memcpy(tmp, loc_job, sizeof(job_t));
-	//add_history(tmp);
-	add_history(loc_job);	
+	if(strcmp(job_name, "") != 0){
+		add_history(loc_job);	
+	}	
 	launch_job(loc_job);
 }
 
@@ -451,8 +383,6 @@ int launch_job(job_t * loc_job)
      */
 	//printf("%s\n", loc_job->full_command);
 	if(strcmp(loc_job->binary, " ") != 0){
-		//printf("%s\n", loc_job->binary);
-		//return 0;
 		pid_t c_pid = 0;
 		int status = 0;
 		char **args;
@@ -464,71 +394,50 @@ int launch_job(job_t * loc_job)
 		} else {
 			a = strdup(loc_job->full_command);
 		}
-	//	if(loc_job->is_background == 1){
-	//		strncat(loc_job->full_command, "&", 1);
-	//	}
 		int argc = get_length(strdup(a));
-		char * tmp = strtok(a, " ");
-		//printf("a before: %s\n", a);	
+		char * tmp = strtok(a, " ");	
 		args = (char **)malloc(sizeof(char*) * (argc + 1));
-		//args[0] = strdup(loc_job->binary);
 		int i = 0;
 		while(tmp != NULL){
 			args[i] = remove_Spaces(strdup(tmp));
-			//printf("before:%s\n", args[i]);
 			tmp = strtok(NULL, " ");
 			i++;
 		}
-		args[i] = NULL;
-		//printf("output file: %s\n", loc_job->file_redirect);	
+		args[i] = NULL;	
 		c_pid = fork();
-		//printf("job pid: %d\n", loc_job->pid);
-		//lo/c_job->pid = c_pid;
-		//printf("job pid: %d\n", loc_job->pid);
 		jobs[his_count - 1].pid = c_pid;
-		//printf("job pid: %d\n", jobs[his_count - 1].pid);
-	//	add_history(loc_job);
 		if(c_pid < 0){
 			return -1;
 		} else if(c_pid == 0){
 			if(loc_job->redirect == 1){
 				char * nospace_file = remove_Spaces(strdup(loc_job->file_redirect));
-				file_des = open(nospace_file, O_WRONLY | O_APPEND);
+				file_des = open(nospace_file, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
+				if(file_des == -1){
+					printf("ERROR WITH FILE\n");
+					return 0;
+				}
 				dup2(file_des, STDOUT_FILENO);
 				close(file_des);
 				execvp(args[0], args);
 			} else if (loc_job->redirect == 2){
 				char * nospace_file = remove_Spaces(strdup(loc_job->file_redirect));
-				file_des = open(nospace_file, O_CREAT | O_RDONLY |  O_WRONLY);
+				file_des = open(nospace_file, O_RDONLY, S_IRUSR | S_IWUSR);
+				if(file_des == -1){
+					printf("ERROR WITH FILE");
+					return 0;
+				}
 				dup2(file_des, STDIN_FILENO);
 				close(file_des);
 				execvp(args[0], args);
 			} else {
-				//printf("%s\n", args[0]);	
 				execvp(args[0], args);
 			}
 		}  else {
-			
-			//jobs[his_count - 1].pid = (int)c_pid;
-			
 			if(loc_job->is_background == 0){
-				//printf("%d\n", his_index);
-				//job_t * tmp = (job_t*)jobs[his_index - 1];
-				//if(tmp == NULL){
-				//	printf("fuck");
-				//	return 0;
-				//}
-				//printf("%s\n", tmp->full_command);
-				//return 0;
-				//job_t * tmp = &jobs[his_index - 1];
-				//printf("%d\n", tmp.pid);
 				waitpid(c_pid, &status, 0);
 			}
 		}
 	} else {
-		//job_t * tmp_job = (job_t *)malloc(sizeof(job_t));
-		//memcpy(tmp_job, loc_job, sizeof(loc_job));
-		//add_history(tmp_job);
 		if(strcmp(history, strtok(strdup(loc_job->full_command), " ")) == 0){
 			builtin_history();
 		} else if (strcmp(exit_cmmd, strtok(strdup(loc_job->full_command), " ")) == 0){
@@ -550,7 +459,6 @@ int launch_job(job_t * loc_job)
  * Helper function to remove teh spaces of a command
  */
 char * remove_Spaces(char * tmp){
-	//printf("Here\n");
 	int count = 0;
 	int i;
 	for(i = 0; tmp[i]; i++){
@@ -572,7 +480,6 @@ int get_length(char * tmp){
 		count++;
 		token = strtok(NULL, " ");
 	}
-	//printf("%d\n", count);
 	return count;
 }
 
@@ -671,7 +578,6 @@ int getVal(char * cmmd){
  */
 int builtin_fg(void)
 {
-	//printf("here");
 	int status = 0;
 	if(get_length(strdup(jobs[his_count - 1].full_command)) == 2){ 
 		int val = getVal(strdup(jobs[his_count - 1].full_command));
@@ -681,7 +587,6 @@ int builtin_fg(void)
 			printf("Job has completed\n");
 		}
 	} else {
-		//printf("here\n");
 		int i;
 		int index = 0;
 		int found_background = 0;
@@ -693,9 +598,7 @@ int builtin_fg(void)
 				}
 			}
 		}
-		//printf("p\n");
 		if(found_background == 1){
-		//	printf("waiting");
 			waitpid((pid_t)jobs[index].pid, &status, 0);
 		} else {
 			printf("Job has completed\n");

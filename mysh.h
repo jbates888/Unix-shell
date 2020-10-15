@@ -60,7 +60,7 @@ int his_count;
  * Interactive or batch mode
  */
 int is_batch = FALSE;
-
+//
 /*
  * Counts
  */
