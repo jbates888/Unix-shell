@@ -328,7 +328,8 @@ int interactive_mode(void)
 }
 
 /*
- *helper function for checking the type of file redirection*/
+ *helper function for checking the type of file redirection
+*/
 int file_redir(char * cmmd){
 	if(strchr(strdup(cmmd), '>')) return 1;
 	if(strchr(strdup(cmmd), '<')) return 2;
@@ -336,7 +337,7 @@ int file_redir(char * cmmd){
 }
 
 /*
- *helper function for adding to the history array
+ * Helper function for adding to the history array
  */
 void add_history(job_t * loc_job){
 	//int i = sizeof(job_t)/ sizeof(loc_job);
@@ -363,7 +364,7 @@ void add_history(job_t * loc_job){
 }
 
 /*
- *helper function for adding a job
+ * Helper function for adding a job
  */
 void add_job(int* tmp){
 	//jobs[his_index - 1] = *tmp;
@@ -407,6 +408,9 @@ char * substr(char *src, int start, int end){
 
 }
 
+/*
+ * Helper function to return if a command is a built in command
+ */
 int check_builtin(char * command){
 	const char * exit_cmmd = "exit";
 	const char * fg = "fg";
@@ -542,6 +546,9 @@ int launch_job(job_t * loc_job)
     return 0;
 }
 
+/*
+ * Helper function to remove teh spaces of a command
+ */
 char * remove_Spaces(char * tmp){
 	//printf("Here\n");
 	int count = 0;
@@ -555,7 +562,9 @@ char * remove_Spaces(char * tmp){
 	return tmp;
 }
 
-
+/*
+ *Helper function to get the length 
+ */
 int get_length(char * tmp){
 	int count = 0;
 	char * token = strtok(tmp, " ");
@@ -567,6 +576,9 @@ int get_length(char * tmp){
 	return count;
 }
 
+/*
+ * Helper function to ingnore the spaces before a command
+ */
 char * char_after_space(char * cmmd){
 	char * starting = cmmd;
 	while(*starting != ' '){
@@ -576,12 +588,18 @@ char * char_after_space(char * cmmd){
 	return starting;
 }
 
-int builtin_exit(void)
-{
+/*
+ * function for built in commman exit
+ */
+int builtin_exit(void){
+    /*wait until all the jobs are done*/
     builtin_wait();
     return 0;
 }
 
+/*
+ *
+ */
 int builtin_jobs(void)
 {
     	int i;
@@ -603,9 +621,13 @@ int builtin_jobs(void)
     return 0;
 }
 
+/*
+ * Function for built in command history
+ */
 int builtin_history(void)
 {
 	int i;
+        /*loop through each job*/
 	for(i = 0; i < his_index; i++){
 		char * tmp = strdup(jobs[i].full_command);
 		if(jobs[i].is_background == 1){
@@ -616,10 +638,13 @@ int builtin_history(void)
 	return 0;
 }
 
-int builtin_wait(void)
-{
+/*
+ *Function for built in wait command
+ */
+int builtin_wait(void){
 	int i;
 	int status = 0;
+        /*loop though each job and call wait until all jobs are done*/
 	for(i = 0; i < his_index; i++){
 		if(jobs[i].is_background == 1){
 			if(jobs[i].done == 0){
@@ -630,14 +655,20 @@ int builtin_wait(void)
     return 0;
 }
 
+/*
+ *
+ */
 int getVal(char * cmmd){
 	char * tmp = strtok(cmmd, " ");
 	char * val = strtok(NULL, " ");
 	char vals[1]; 
 	strcpy(vals, val);
-	return vals[0] - '0';
-	
+	return vals[0] - '0';	
 }
+
+/*
+ * Funtion for built in FG command
+ */
 int builtin_fg(void)
 {
 	//printf("here");
