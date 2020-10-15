@@ -1,5 +1,5 @@
 /*
- * [YOUR NAME HERE]
+ * AJ Thus, Jack Bates
  *
  * CS441/541: Project 3
  *
@@ -11,10 +11,10 @@
 int main(int argc, char * argv[]) {
   int ret;
   
-   jobs = (job_t *)malloc(sizeof(job_t));
-  //j//obs = NULL;
-  his_index = 0;
-  his_count = 0;
+    jobs = (job_t *)malloc(sizeof(job_t));
+    //j//obs = NULL;
+    his_index = 0;
+    his_count = 0;
     /*
      * Parse Command line arguments to check if this is an interactive or batch
      * mode run.
@@ -95,7 +95,7 @@ int parse_args_main(int argc, char **argv)
 
     
      i = 1;
-        /*if there is more then one arg passed in, its batch mode*/
+     /*if there is more then one arg passed in, its batch mode*/
      if(argc > 1){
             /*loop through each argv*/
             while(NULL != argv[i] && strstr(argv[i], ".txt") != NULL){
@@ -165,21 +165,25 @@ int interactive_mode(void)
          * Print the prompt
          */
 	printf("mysh$ ");
-
+        /*create space for input string*/
         char * input = (char *)malloc(256 * sizeof(char));
 	size_t len = 1024;
+        /*get the next line from stdin*/
 	getline(&input, &len, stdin);
+        /*remove the next line char from the input*/
 	strtok(input, "\n");
 
-	
+	/*create a temp veriable for the input*/
 	char * tmp = strdup(input);
 	char * part_string = strdup(input);
 	int i = 0; 
 	int last_stop = 0; 
+        /*loop until the and of the input is reached*/
 	while(tmp[i] != '\0'){
 		char t = tmp[i];
 		char * u = &t;
-		char * job_name;	
+		char * job_name;
+                /*handle the backround case if & is found*/	
 		if(strcmp(u,"&") == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
 //			if(jobs == NULL){
@@ -228,6 +232,7 @@ int interactive_mode(void)
 				job_creation(strdup(part_string), 1, strtok(strdup(part_string), " "), 0 , " ");
 			}
 			last_stop = i + 1;		
+                        /*handle the case of more then one command on the same line*/
 		} else if (strcmp(u, ";") == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
 //			if(jobs == NULL){
@@ -246,6 +251,7 @@ int interactive_mode(void)
 			his_index++;
 		//	add_history(strdup(part_string), 0, his_index-1);
 			total_history++;
+                        /*check for file redirection*/
 			if(file_redir(strdup(part_string)) == 1){	
 				char * part_tmp = strdup(part_string);
 				char * file1 = strtok(part_tmp, ">");
@@ -255,7 +261,8 @@ int interactive_mode(void)
 				char * part_tmp = strdup(part_string);
 				char * file1 = strtok(part_tmp, "<");
 				char * file2 = strtok(NULL, "<");
-				job_creation(strdup(part_string), 0, file1, 1, file2); 	
+				job_creation(strdup(part_string), 0, file1, 1, file2); 
+                                /*check if a built in command was entered*/	
 			} else if(check_builtin(strtok(strdup(part_string), " ")) == 1){
 				if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
 					return builtin_exit();
@@ -320,11 +327,17 @@ int interactive_mode(void)
     return 0;
 }
 
+/*
+ *helper function for checking the type of file redirection*/
 int file_redir(char * cmmd){
 	if(strchr(strdup(cmmd), '>')) return 1;
 	if(strchr(strdup(cmmd), '<')) return 2;
 	return 0;
 }
+
+/*
+ *helper function for adding to the history array
+ */
 void add_history(job_t * loc_job){
 	//int i = sizeof(job_t)/ sizeof(loc_job);
 	//printf("%d\n", i);
@@ -349,12 +362,19 @@ void add_history(job_t * loc_job){
 	jobs[his_count - 1].id = 0;
 }
 
+/*
+ *helper function for adding a job
+ */
 void add_job(int* tmp){
 	//jobs[his_index - 1] = *tmp;
 }
 
+/*
+ * Function to create a job using the parameters passed in
+ */
 void job_creation(char * job_name, int background, char * binary, int redirection, char * filename){
 	//printf("Job creation: %s\n", job_name);
+        /*set the job's attributes*/
 	job_t * loc_job = (job_t *)malloc(sizeof(job_t));
 	loc_job->full_command = strdup(job_name);
 	loc_job->binary = binary;
@@ -371,6 +391,9 @@ void job_creation(char * job_name, int background, char * binary, int redirectio
 	launch_job(loc_job);
 }
 
+/*
+ * Helper funtion to return a peice of the string between the bounds passed in
+ */
 char * substr(char *src, int start, int end){
 	int len = end - start;
 	char * dest = (char*)malloc(sizeof(char) * (len + 1));
