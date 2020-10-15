@@ -301,7 +301,7 @@ int interactive_mode(void)
 			total_jobs++;
 			job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0 ,NULL, jobs);
 		}
-		printf("%s%d\n","pid " , jobs[his_index - 1]);
+		printf("%d\n", jobs[his_index - 1]);
 	}	 	
        
     } while( 1/* end condition */);
