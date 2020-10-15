@@ -37,14 +37,15 @@
  */
 struct job_t {
     char * full_command;
-    int argc;
-    char **argv;
+    //int argc;
+    //char **argv;
     int is_background;
     char * binary;
     char * file_redirect;
     int redirect;
     int done;
-    pid_t  pid;
+    int pid;
+    int id;
 };
 typedef struct job_t job_t;
 
@@ -55,7 +56,6 @@ char ** history;
 char ** file_line_arr; 
 int his_index;
 int his_count;
-//int * jobs;
 /*
  * Interactive or batch mode
  */
@@ -68,7 +68,8 @@ int total_jobs_display_ctr = 0;
 int total_jobs    = 0;
 int total_jobs_bg = 0;
 int total_history = 0;
-
+job_t * jobs;
+int count = 0;
 /*
  * Debugging mode
  */
@@ -124,7 +125,7 @@ int interactive_mode(void);
  *   0 on success
  *   Negative value on error 
  */
-int launch_job(job_t * loc_job, int * jobs);
+int launch_job(job_t * loc_job);
 
 /*
  * Built-in 'exit' command
@@ -200,9 +201,9 @@ int builtin_fg_num(int job_num);
 
 int get_length(char * tmp);
 char * substr(char * src, int start, int end);
-void job_creation(char * job_name, int background, char * binary, int redirection, char * filename, int * jobs);
+void job_creation(char * job_name, int background, char * binary, int redirection, char * filename);
 int check_builtin(char * command);
-void add_history(char * cmmd, int background, int his_size);
+void add_history(job_t * loc_job);
 int file_redir(char * cmmd);
 char * remove_Spaces(char * tmp);
 #endif /* MYSHELL_H */
