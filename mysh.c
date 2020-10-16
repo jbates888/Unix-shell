@@ -124,30 +124,26 @@ int parse_args_main(int argc, char **argv)
 int batch_mode(void)
 {
     int i;
-    /*
-     * For each file...
-     */
    
     /*loop through each line of input*/
-    i = 0;
-    while(file_line_arr[i] != NULL){
-        printf("%s%s\n", "command: ", file_line_arr[i]);
-        i++;
-    }
-
+    //i = 0;
+    //while(file_line_arr[i] != NULL){
+    //  printf("%s%s\n", "command: ", file_line_arr[i]);
+    //  i++;
+    //}
+    
+    int index = 0;
     do {
-        /*
-         * Print the prompt
-         */
-    printf("mysh$ ");
         /*create space for input string*/
         char * input = (char *)malloc(256 * sizeof(char));
 	size_t len = 1024;
         /*get the next line from stdin*/
-	int line = getline(&input, &len, stdin);
-	if(line == -1){
-		return builtin_exit();
-	}
+	//int line = getline(&input, &len, stdin);
+	//if(line == -1){
+	//	return builtin_exit();
+	//}
+        input = file_line_arr[index];
+        printf("%s%s", "Line from file: ", input);
         /*remove the next line char from the input*/
 	strtok(input, "\n");
 	//why would you have a command called w?
@@ -252,14 +248,12 @@ int batch_mode(void)
 			job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0 ," ");
 		}
 	}	 	
-       
-    } while( 1/* end condition */);
+        index += 1;
+    } while(file_line_arr[index] != NULL);
 
     /*
      * Cleanup
      */
-
-    return 0;
 
 
     return 0;
