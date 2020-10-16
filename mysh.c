@@ -124,26 +124,132 @@ int parse_args_main(int argc, char **argv)
 int batch_mode(void)
 {
     int i;
-    /*
-     * For each file...
-     */
    
     /*loop through each line of input*/
-    i = 0;
-    while(file_line_arr[i] != NULL){
-        printf("%s%s\n", "command: ", file_line_arr[i]);
-        i++;
-    }
-
-        /*
-         * Open the batch file
-         * If there was an error then print a message and move on to the next file.
-         * Otherwise, 
-         *   - Read one line at a time.
-         *   - strip off new line
-         *   - parse and execute
-         * Close the file
-         */
+    //i = 0;
+    //while(file_line_arr[i] != NULL){
+    //  printf("%s%s\n", "command: ", file_line_arr[i]);
+    //  i++;
+    //}
+    
+    int index = 0;
+    do {
+        /*create space for input string*/
+        char * input = (char *)malloc(256 * sizeof(char));
+	size_t len = 1024;
+        /*get the next line from stdin*/
+	//int line = getline(&input, &len, stdin);
+	//if(line == -1){
+	//	return builtin_exit();
+	//}
+        input = file_line_arr[index];
+        printf("%s%s", "Line from file: ", input);
+        /*remove the next line char from the input*/
+	strtok(input, "\n");
+	//why would you have a command called w?
+	if(strlen(strdup(input)) == 1 && strcmp(strdup(input), "w") != 0){
+		continue;
+	}
+	/*create a temp veriable for the input*/
+	char * tmp = strdup(input);
+	char * part_string = strdup(input);
+	int i = 0; 
+	int last_stop = 0; 
+        /*loop until the and of the input is reached*/
+	while(tmp[i] != '\0'){
+		char t = tmp[i];
+		char * u = &t;
+		char * job_name;
+                /*handle the backround case if & is found*/	
+		if(strcmp(u,"&") == 0){
+			part_string = substr(strdup(tmp), last_stop, i);
+			his_index++;
+			if(file_redir(strdup(part_string)) == 1){	
+				total_history++;
+				total_jobs_bg++;
+				total_jobs++;
+				char * part_tmp = strdup(part_string);
+				char * file1 = strtok(part_tmp, ">");
+				char * file2 = strtok(NULL, ">");
+				job_creation(strdup(part_string), 1, file1, 1, file2); 	
+			} else if(file_redir(strdup(part_string)) == 2){	
+				total_history++;
+				total_jobs_bg++;
+				total_jobs++;
+				char * part_tmp = strdup(part_string);
+				char * file1 = strtok(part_tmp, "<");
+				char * file2 = strtok(NULL, "<");
+				job_creation(strdup(part_string), 1, file1, 1, file2); 	
+			} else if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+				total_history++;
+				if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
+					return builtin_exit();
+				} 
+				job_creation(strdup(part_string), 0, " ", 0, " ");
+			} else {
+				total_history++;
+				total_jobs_bg++;
+				total_jobs++;
+				job_creation(strdup(part_string), 1, strtok(strdup(part_string), " "), 0 , " ");
+			}
+			last_stop = i + 1;		
+                        /*handle the case of more then one command on the same line*/
+		} else if (strcmp(u, ";") == 0){
+			part_string = substr(strdup(tmp), last_stop, i);
+			his_index++;
+			total_history++;
+                        /*check for file redirection*/
+			if(file_redir(strdup(part_string)) == 1){	
+				char * part_tmp = strdup(part_string);
+				char * file1 = strtok(part_tmp, ">");
+				char * file2 = strtok(NULL, ">");
+				job_creation(strdup(part_string), 0, file1, 1, file2); 	
+			} else if(file_redir(strdup(part_string)) == 2){	
+				char * part_tmp = strdup(part_string);
+				char * file1 = strtok(part_tmp, "<");
+				char * file2 = strtok(NULL, "<");
+				job_creation(strdup(part_string), 0, file1, 1, file2); 
+                                /*check if a built in command was entered*/	
+			} else if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+				if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
+					return builtin_exit();
+				}
+				job_creation(strdup(part_string), 0, " ", 0 , " ");
+			} else {
+				total_jobs++;
+				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0, " ");
+			}
+			last_stop = i + 1;
+		}
+		i++;
+	}
+	part_string = substr(strdup(tmp), last_stop, i);
+	int leftover = get_length(strdup(part_string));
+	if(leftover != 0){
+		his_index++;
+		total_history++;
+		if(file_redir(strdup(part_string)) == 1){	
+			char * part_tmp = strdup(part_string);
+			char * file1 = strtok(strdup(part_tmp), ">");
+			char * file2 = strtok(NULL, ">");
+			job_creation(strdup(part_string), 0, file1, 1, file2); 	
+		} else if(file_redir(strdup(part_string)) == 2){	
+			char * part_tmp = strdup(part_string);
+			char * file1 = strtok(part_tmp, "<");
+			char * file2 = strtok(NULL, "<");
+			job_creation(strdup(part_string), 0, file1, 1, file2); 	
+		} else if(check_builtin(strtok(strdup(part_string), " ")) == 1){
+			if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
+				return builtin_exit();
+			}
+			job_creation(strdup(part_string), 0, " ", 0, " ");
+		} else {
+			total_jobs++;
+			job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0 ," ");
+		}
+	}	 	
+        index += 1;
+    } while(file_line_arr[index] != NULL);
 
     /*
      * Cleanup
