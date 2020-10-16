@@ -178,7 +178,8 @@ int batch_mode(void)
 		char * u = &t;
 		char * job_name;
                 /*handle the backround case if & is found*/	
-		if(strcmp(u,"&") == 0){
+		char * amp = "&";
+		if(strcmp(u,amp) == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
 			his_index++;
 			if(file_redir(strdup(part_string)) == 1){	
