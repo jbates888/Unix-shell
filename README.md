@@ -49,15 +49,15 @@ Call "exit" to end the program
 
 Self Made tests:
 
-Test1.txt: 
+Test1.txt: Basic tests to make sure we can parse a single or multiple commands on one line. 
 
-Test2.txt:
+Test2.txt: Tests for file redirection. Also checks that we ignore blank lines.
 
-Test3.txt:
+Test3.txt: Makes sure that builtin commands don't run in the background when the have an &.
 
-Test4.txt: 
+Test4.txt: Checks multiple commands on one line. Also checks the fg, wait, and jobs function to make sure our job t array is storing processes correctly.  
 
-Test5.txt: 
+Test5.txt: Another test with multiple commands on lines. Checks ignoring whitespace and lines with no commands. Also checks all builtin commands and makes sure they don't run in the background.  
 
 
 Tested with the given tests along with exta test files to cover more cases
