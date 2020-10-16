@@ -117,7 +117,6 @@ int parse_args_main(int argc, char **argv)
     /*
      * If command line arguments were supplied then this is batch mode.
      */
-
     return 0;
 }
 
