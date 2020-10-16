@@ -164,10 +164,14 @@ int interactive_mode(void)
         char * input = (char *)malloc(256 * sizeof(char));
 	size_t len = 1024;
         /*get the next line from stdin*/
-	getline(&input, &len, stdin);
+	int line = getline(&input, &len, stdin);
+	if(line == -1){
+		return builtin_exit();
+	}
         /*remove the next line char from the input*/
 	strtok(input, "\n");
-	if(strlen(strdup(input)) == 1){
+	//why would you have a command called w?
+	if(strlen(strdup(input)) == 1 && strcmp(strdup(input), "w") != 0){
 		continue;
 	}
 	/*create a temp veriable for the input*/
