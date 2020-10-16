@@ -3,5 +3,5 @@ pwd
 ls
 ls tests
 whoami
-
+exit
 date

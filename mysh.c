@@ -28,24 +28,24 @@ int main(int argc, char * argv[]) {
      * If in batch mode then process all batch files
      */
     if( TRUE == is_batch) {
-        if( TRUE == is_debug ) {
+       if( TRUE == is_debug ) {
             printf("Batch Mode!\n");
         }
 
         if( 0 != (ret = batch_mode()) ) {
-            fprintf(stderr, "Error: Batch mode returned a failure!\n");
+           fprintf(stderr, "Error: Batch mode returned a failure!\n");
         }
     }
     /*
      * Otherwise proceed in interactive mode
      */
-    else if( FALSE == is_batch ) {
+   else if( FALSE == is_batch ) {
         if( TRUE == is_debug ) {
             printf("Interactive Mode!\n");
         }
 
         if( 0 != (ret = interactive_mode()) ) {
-            fprintf(stderr, "Error: Interactive mode returned a failure!\n");
+           fprintf(stderr, "Error: Interactive mode returned a failure!\n");
         }
     }
     /*
@@ -74,7 +74,13 @@ int main(int argc, char * argv[]) {
 
 int parse_args_main(int argc, char **argv)
 {
-    int i;
+
+//	if(argc == 1){
+//		interactive_mode();
+//	} else {
+//		return parse(argc, argv);
+//	}
+   int i;
     FILE * fp;
     char * line = NULL;
     size_t len = 0;
@@ -91,7 +97,7 @@ int parse_args_main(int argc, char **argv)
 
     
      i = 1;
-     /*if there is more then one arg passed in, its batch mode*/
+     //if there is more then one arg passed in, its batch mode*/
      if(argc > 1){
             /*loop through each argv*/
             while(NULL != argv[i] && strstr(argv[i], ".txt") != NULL){
@@ -99,21 +105,30 @@ int parse_args_main(int argc, char **argv)
                 /*open the file*/
                 fp = fopen(argv[i], "r");
                 if(fp == NULL){
-                    exit(1);
+                   exit(1);
                 }
                 /*read each line in the current file*/
                 while((read = getline(&line, &len, fp)) != -1){
                     /*increase the size of the commands array and and the line from the file to it*/
-                    file_line_arr[count] = malloc(sizeof(char) * ((strlen(line) + 1)));
+                    file_line_arr[count] = malloc(sizeof(char) * 1024);
+         	    array_count++;           
+                    if(line[strlen(line) - 1] == '\n'){
+                        line[strlen(line) - 1] = '\0';
+                    }
                     strcpy(file_line_arr[count], line);
+	//	    printf("%d\n", array_count);
                     count++;
-                    file_line_arr = (char**) realloc(file_line_arr, (count + 1) * sizeof(char*));      
+                    file_line_arr = (char**) realloc(file_line_arr, (count + 1) * sizeof(char*) * 1024);      
                 }
+		//array_count++;
                 i++;
                 fclose(fp);
             }
-     }
-
+    }
+	//return 0;
+	//if(is_batch == TRUE){
+	//	batch_mode();
+	//} 
     /*
      * If command line arguments were supplied then this is batch mode.
      */
@@ -122,7 +137,7 @@ int parse_args_main(int argc, char **argv)
 
 int batch_mode(void)
 {
-    int i;
+    //int i;
    
     /*loop through each line of input*/
     //i = 0;
@@ -131,20 +146,23 @@ int batch_mode(void)
     //  i++;
     //}
     
-    int index = 0;
-    do {
+    int index;
+    for(index = 0; index < array_count; index++){
         /*create space for input string*/
-        char * input = (char *)malloc(256 * sizeof(char));
+        char * input = file_line_arr[index];
+        //input = (char*)malloc(sizeof(char *) * strlen(file_line_arr[index]));
+        //memcpy(input, file_line_arr[index], strlen(file_line_arr[index]));
 	size_t len = 1024;
         /*get the next line from stdin*/
 	//int line = getline(&input, &len, stdin);
 	//if(line == -1){
 	//	return builtin_exit();
 	//}
-        input = file_line_arr[index];
-        printf("%s%s", "Line from file: ", input);
-        /*remove the next line char from the input*/
-	strtok(input, "\n");
+                // input = file_line_arr[index];
+       
+        //   printf("%s%s\n","Input: ", input);
+        
+        //strtok(input, "\n");
 	//why would you have a command called w?
 	if(strlen(strdup(input)) == 1 && strcmp(strdup(input), "w") != 0){
 		continue;
@@ -247,8 +265,8 @@ int batch_mode(void)
 			job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0 ," ");
 		}
 	}	 	
-        index += 1;
-    } while(file_line_arr[index] != NULL);
+       // index += 1;
+    }
 
     /*
      * Cleanup
@@ -498,10 +516,13 @@ int launch_job(job_t * loc_job)
 		char * a;
 		int file_des;
 		int out_saved = dup(STDOUT_FILENO);
-		if(loc_job->redirect != 0){
+		if(loc_job->redirect == 1){
 			a = strtok(strdup(loc_job->full_command), ">");
-		} else {
+		} else if (loc_job->redirect == 2){
+			a = strtok(strdup(loc_job->full_command), "<");
+		}else {
 			a = strdup(loc_job->full_command);
+
 		}
 		int argc = get_length(strdup(a));
 		char * tmp = strtok(a, " ");	

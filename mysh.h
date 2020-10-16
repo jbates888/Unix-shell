@@ -56,6 +56,7 @@ char ** history;
 char ** file_line_arr; 
 int his_index;
 int his_count;
+int array_count = 0;
 /*
  * Interactive or batch mode
  */
@@ -206,4 +207,5 @@ int check_builtin(char * command);
 void add_history(job_t * loc_job);
 int file_redir(char * cmmd);
 char * remove_Spaces(char * tmp);
+int parse(int argc, char** argv);
 #endif /* MYSHELL_H */
