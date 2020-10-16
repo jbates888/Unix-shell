@@ -105,6 +105,10 @@ int parse_args_main(int argc, char **argv)
                 while((read = getline(&line, &len, fp)) != -1){
                     /*increase the size of the commands array and and the line from the file to it*/
                     file_line_arr[count] = malloc(sizeof(char) * ((strlen(line) + 1)));
+                    
+                    //if(line[strlen(line) - 1] == '\n'){
+                        //line[strlen(line) - 1] = '\0';
+                        // }
                     strcpy(file_line_arr[count], line);
                     count++;
                     file_line_arr = (char**) realloc(file_line_arr, (count + 1) * sizeof(char*));      
@@ -133,19 +137,22 @@ int batch_mode(void)
     //}
     
     int index = 0;
-    do {
+    do{
         /*create space for input string*/
-        char * input = (char *)malloc(256 * sizeof(char));
+        char * input;
+        input = (char*)malloc(sizeof(char *) * strlen(file_line_arr[index]));
+        memcpy(input, file_line_arr[index], strlen(file_line_arr[index]));
 	size_t len = 1024;
         /*get the next line from stdin*/
 	//int line = getline(&input, &len, stdin);
 	//if(line == -1){
 	//	return builtin_exit();
 	//}
-        input = file_line_arr[index];
-        printf("%s%s", "Line from file: ", input);
-        /*remove the next line char from the input*/
-	strtok(input, "\n");
+                // input = file_line_arr[index];
+       
+        //   printf("%s%s\n","Input: ", input);
+        
+        strtok(input, "\n");
 	//why would you have a command called w?
 	if(strlen(strdup(input)) == 1 && strcmp(strdup(input), "w") != 0){
 		continue;
@@ -249,7 +256,7 @@ int batch_mode(void)
 		}
 	}	 	
         index += 1;
-    } while(file_line_arr[index] != NULL);
+    } while(file_line_arr[index] != '0');
 
     /*
      * Cleanup
