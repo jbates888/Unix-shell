@@ -37,8 +37,6 @@
  */
 struct job_t {
     char * full_command;
-    //int argc;
-    //char **argv;
     int is_background;
     char * binary;
     char * file_redirect;
@@ -52,11 +50,11 @@ typedef struct job_t job_t;
 /******************************
  * Global Variables
  ******************************/
-char ** history;
 char ** file_line_arr; 
 int his_index;
 int his_count;
 int array_count = 0;
+job_t * jobs;
 /*
  * Interactive or batch mode
  */
@@ -69,7 +67,6 @@ int total_jobs_display_ctr = 0;
 int total_jobs    = 0;
 int total_jobs_bg = 0;
 int total_history = 0;
-job_t * jobs;
 int count = 0;
 /*
  * Debugging mode
@@ -199,7 +196,6 @@ int builtin_fg(void);
  *   Negative value on error
  */
 int builtin_fg_num(int job_num);
-
 int get_length(char * tmp);
 char * substr(char * src, int start, int end);
 void job_creation(char * job_name, int background, char * binary, int redirection, char * filename);

@@ -6,13 +6,10 @@
  */
 #include "mysh.h"
 
-//struct job_t * jobs;
-
 int main(int argc, char * argv[]) {
   int ret;
-  
+  //initialize jobs array and counter variables
     jobs = (job_t *)malloc(sizeof(job_t));
-    //j//obs = NULL;
     his_index = 0;
     his_count = 0;
     /*
@@ -75,11 +72,6 @@ int main(int argc, char * argv[]) {
 int parse_args_main(int argc, char **argv)
 {
 
-//	if(argc == 1){
-//		interactive_mode();
-//	} else {
-//		return parse(argc, argv);
-//	}
    int i;
     FILE * fp;
     char * line = NULL;
@@ -89,12 +81,6 @@ int parse_args_main(int argc, char **argv)
     int count = 0;
     file_line_arr = (char**)malloc(sizeof(char*) * (count * 1));
     
-
-    /*
-     * If no command line arguments were passed then this is an interactive
-     * mode run.
-     */
-
     
      i = 1;
      //if there is more then one arg passed in, its batch mode*/
@@ -116,7 +102,6 @@ int parse_args_main(int argc, char **argv)
                         line[strlen(line) - 1] = '\0';
                     }
                     strcpy(file_line_arr[count], line);
-	//	    printf("%d\n", array_count);
                     count++;
                     file_line_arr = (char**) realloc(file_line_arr, (count + 1) * sizeof(char*) * 1024);      
                 }
@@ -125,45 +110,18 @@ int parse_args_main(int argc, char **argv)
                 fclose(fp);
             }
     }
-	//return 0;
-	//if(is_batch == TRUE){
-	//	batch_mode();
-	//} 
-    /*
-     * If command line arguments were supplied then this is batch mode.
-     */
     return 0;
 }
 
 int batch_mode(void)
 {
-    //int i;
-   
-    /*loop through each line of input*/
-    //i = 0;
-    //while(file_line_arr[i] != NULL){
-    //  printf("%s%s\n", "command: ", file_line_arr[i]);
-    //  i++;
-    //}
     
     int index;
+//loop over every index of file_line_arr 
     for(index = 0; index < array_count; index++){
         /*create space for input string*/
         char * input = file_line_arr[index];
-        //input = (char*)malloc(sizeof(char *) * strlen(file_line_arr[index]));
-        //memcpy(input, file_line_arr[index], strlen(file_line_arr[index]));
-	size_t len = 1024;
-        /*get the next line from stdin*/
-	//int line = getline(&input, &len, stdin);
-	//if(line == -1){
-	//	return builtin_exit();
-	//}
-                // input = file_line_arr[index];
-       
-        //   printf("%s%s\n","Input: ", input);
-        
-        //strtok(input, "\n");
-	//why would you have a command called w?
+ 	//check if length of input is 1 
 	if(strlen(strdup(input)) == 1 && strcmp(strdup(input), "w") != 0){
 		continue;
 	}
@@ -176,12 +134,13 @@ int batch_mode(void)
 	while(tmp[i] != '\0'){
 		char t = tmp[i];
 		char * u = &t;
-		char * job_name;
                 /*handle the backround case if & is found*/	
 		char * amp = "&";
+		char * semi = ";";
 		if(strcmp(u,amp) == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
 			his_index++;
+			//check if we need to change stdout
 			if(file_redir(strdup(part_string)) == 1){	
 				total_history++;
 				total_jobs_bg++;
@@ -190,6 +149,7 @@ int batch_mode(void)
 				char * file1 = strtok(part_tmp, ">");
 				char * file2 = strtok(NULL, ">");
 				job_creation(strdup(part_string), 1, file1, 1, file2); 	
+			//check if we need to change stdin
 			} else if(file_redir(strdup(part_string)) == 2){	
 				total_history++;
 				total_jobs_bg++;
@@ -197,13 +157,15 @@ int batch_mode(void)
 				char * part_tmp = strdup(part_string);
 				char * file1 = strtok(part_tmp, "<");
 				char * file2 = strtok(NULL, "<");
-				job_creation(strdup(part_string), 1, file1, 1, file2); 	
+				job_creation(strdup(part_string), 1, file1, 1, file2);
+			//check if we have a builtin command trying to be put in the background 	
 			} else if(check_builtin(strtok(strdup(part_string), " ")) == 1){
 				total_history++;
 				if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
 					return builtin_exit();
 				} 
 				job_creation(strdup(part_string), 0, " ", 0, " ");
+			//binary command
 			} else {
 				total_history++;
 				total_jobs_bg++;
@@ -212,7 +174,7 @@ int batch_mode(void)
 			}
 			last_stop = i + 1;		
                         /*handle the case of more then one command on the same line*/
-		} else if (strcmp(u, ";") == 0){
+		} else if (strcmp(u, semi) == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
 			his_index++;
 			total_history++;
@@ -233,6 +195,7 @@ int batch_mode(void)
 					return builtin_exit();
 				}
 				job_creation(strdup(part_string), 0, " ", 0 , " ");
+			//binary command
 			} else {
 				total_jobs++;
 				job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0, " ");
@@ -241,6 +204,7 @@ int batch_mode(void)
 		}
 		i++;
 	}
+	//check last command if no & or ; 
 	part_string = substr(strdup(tmp), last_stop, i);
 	int leftover = get_length(strdup(part_string));
 	if(leftover != 0){
@@ -266,13 +230,7 @@ int batch_mode(void)
 			job_creation(strdup(part_string), 0, strtok(strdup(part_string), " "), 0 ," ");
 		}
 	}	 	
-       // index += 1;
     }
-
-    /*
-     * Cleanup
-     */
-
 
     return 0;
 }
@@ -280,12 +238,10 @@ int batch_mode(void)
 int interactive_mode(void)
 {
     do {
-        /*
-         * Print the prompt
-         */
+      
 	printf("mysh$ ");
         /*create space for input string*/
-        char * input = (char *)malloc(256 * sizeof(char));
+        char * input = (char *)malloc(1024 * sizeof(char));
 	size_t len = 1024;
         /*get the next line from stdin*/
 	int line = getline(&input, &len, stdin);
@@ -294,7 +250,6 @@ int interactive_mode(void)
 	}
         /*remove the next line char from the input*/
 	strtok(input, "\n");
-	//why would you have a command called w?
 	if(strlen(strdup(input)) == 1 && strcmp(strdup(input), "w") != 0){
 		continue;
 	}
@@ -307,11 +262,11 @@ int interactive_mode(void)
 	while(tmp[i] != '\0'){
 		char t = tmp[i];
 		char * u = &t;
-		char * job_name;
                 /*handle the backround case if & is found*/	
 		if(strcmp(u,"&") == 0){
 			part_string = substr(strdup(tmp), last_stop, i);
 			his_index++;
+			//check if we need to change stdout
 			if(file_redir(strdup(part_string)) == 1){	
 				total_history++;
 				total_jobs_bg++;
@@ -320,6 +275,7 @@ int interactive_mode(void)
 				char * file1 = strtok(part_tmp, ">");
 				char * file2 = strtok(NULL, ">");
 				job_creation(strdup(part_string), 1, file1, 1, file2); 	
+			//check if we need to change stdin
 			} else if(file_redir(strdup(part_string)) == 2){	
 				total_history++;
 				total_jobs_bg++;
@@ -327,13 +283,15 @@ int interactive_mode(void)
 				char * part_tmp = strdup(part_string);
 				char * file1 = strtok(part_tmp, "<");
 				char * file2 = strtok(NULL, "<");
-				job_creation(strdup(part_string), 1, file1, 1, file2); 	
+				job_creation(strdup(part_string), 1, file1, 1, file2);
+			//check if we have a builtin command 	
 			} else if(check_builtin(strtok(strdup(part_string), " ")) == 1){
 				total_history++;
 				if(strcmp("exit", strtok(strdup(part_string), " ")) == 0){
 					return builtin_exit();
 				} 
 				job_creation(strdup(part_string), 0, " ", 0, " ");
+			//all other binary commands
 			} else {
 				total_history++;
 				total_jobs_bg++;
@@ -371,6 +329,7 @@ int interactive_mode(void)
 		}
 		i++;
 	}
+	//check last command if no & or ; 
 	part_string = substr(strdup(tmp), last_stop, i);
 	int leftover = get_length(strdup(part_string));
 	if(leftover != 0){
@@ -398,10 +357,6 @@ int interactive_mode(void)
 	}	 	
        
     } while( 1/* end condition */);
-
-    /*
-     * Cleanup
-     */
 
     return 0;
 }
@@ -492,31 +447,20 @@ int check_builtin(char * command){
 
 int launch_job(job_t * loc_job)
 {
-    /*
-     * Display the job
-     */
-	
+ 
 	const char * exit_cmmd = "exit";
 	const char * fg = "fg";
-	//const char * jobs = "jobs";
 	const char * history = "history";
 	const char * wait = "wait";
 
-    /*
-     * Launch the job in either the foreground or background
-     */
-
-    /*
-     * Some accounting
-     */
-	//printf("%s\n", loc_job->full_command);
+	//check if we have a binary command
 	if(strcmp(loc_job->binary, " ") != 0){
 		pid_t c_pid = 0;
 		int status = 0;
 		char **args;
 		char * a;
 		int file_des;
-		int out_saved = dup(STDOUT_FILENO);
+		//parse the command based on if we have file redirection
 		if(loc_job->redirect == 1){
 			a = strtok(strdup(loc_job->full_command), ">");
 		} else if (loc_job->redirect == 2){
@@ -525,10 +469,12 @@ int launch_job(job_t * loc_job)
 			a = strdup(loc_job->full_command);
 
 		}
+		//get the number of words in the command
 		int argc = get_length(strdup(a));
 		char * tmp = strtok(a, " ");	
 		args = (char **)malloc(sizeof(char*) * (argc + 1));
 		int i = 0;
+		//add each word to args array
 		while(tmp != NULL){
 			args[i] = remove_Spaces(strdup(tmp));
 			tmp = strtok(NULL, " ");
@@ -536,10 +482,12 @@ int launch_job(job_t * loc_job)
 		}
 		args[i] = NULL;	
 		c_pid = fork();
+		//grab the pid of the process
 		jobs[his_count - 1].pid = c_pid;
 		if(c_pid < 0){
 			return -1;
 		} else if(c_pid == 0){
+			//change stdout 
 			if(loc_job->redirect == 1){
 				char * nospace_file = remove_Spaces(strdup(loc_job->file_redirect));
 				file_des = open(nospace_file, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
@@ -550,6 +498,7 @@ int launch_job(job_t * loc_job)
 				dup2(file_des, STDOUT_FILENO);
 				close(file_des);
 				execvp(args[0], args);
+			//change stdin
 			} else if (loc_job->redirect == 2){
 				char * nospace_file = remove_Spaces(strdup(loc_job->file_redirect));
 				file_des = open(nospace_file, O_RDONLY, S_IRUSR | S_IWUSR);
@@ -560,15 +509,18 @@ int launch_job(job_t * loc_job)
 				dup2(file_des, STDIN_FILENO);
 				close(file_des);
 				execvp(args[0], args);
+			//any other binary command
 			} else {
 				execvp(args[0], args);
 			}
 		}  else {
+			//call waitpid if don't have a background job
 			if(loc_job->is_background == 0){
 				waitpid(c_pid, &status, 0);
 			}
 		}
 	} else {
+		//check which builtin command to run 
 		if(strcmp(history, strtok(strdup(loc_job->full_command), " ")) == 0){
 			builtin_history();
 		} else if (strcmp(exit_cmmd, strtok(strdup(loc_job->full_command), " ")) == 0){
@@ -587,7 +539,7 @@ int launch_job(job_t * loc_job)
 }
 
 /*
- * Helper function to remove teh spaces of a command
+ * Helper function to remove the spaces of a command
  */
 char * remove_Spaces(char * tmp){
 	int count = 0;
@@ -602,7 +554,7 @@ char * remove_Spaces(char * tmp){
 }
 
 /*
- *Helper function to get the length 
+ *Helper function to get the number of words in a command 
  */
 int get_length(char * tmp){
 	int count = 0;
@@ -635,15 +587,13 @@ int builtin_exit(void){
     return 0;
 }
 
-/*
- *
- */
 int builtin_jobs(void)
 {
     	int i;
 	int status = 0;
 	for(i = 0; i < his_index; i++){
 		jobs[i].id = i;
+		//if job is in the background and not done, run waitpid on the job's pid
 		if(jobs[i].is_background == 1){
 			if(jobs[i].done == 0){
 				if(waitpid((pid_t)jobs[i].pid, &status, WNOHANG) == 0){
@@ -694,7 +644,7 @@ int builtin_wait(void){
 }
 
 /*
- *
+ * returns the second value on the fg function
  */
 int getVal(char * cmmd){
 	char * tmp = strtok(cmmd, " ");
@@ -710,13 +660,16 @@ int getVal(char * cmmd){
 int builtin_fg(void)
 {
 	int status = 0;
-	if(get_length(strdup(jobs[his_count - 1].full_command)) == 2){ 
+	//check if we have one or two words in the command
+	if(get_length(strdup(jobs[his_count - 1].full_command)) == 2){
+		//get the value, waitpid on it if the job ins't already done 
 		int val = getVal(strdup(jobs[his_count - 1].full_command));
 		if(jobs[val].done == 0){
 			waitpid((pid_t)jobs[his_count - 1].pid, &status, 0);
 		} else {
 			printf("Job has completed\n");
 		}
+	//get the last known unfisnished background job, waitpid on it, otherwise print jobs are done
 	} else {
 		int i;
 		int index = 0;
