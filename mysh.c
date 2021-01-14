@@ -1,7 +1,6 @@
 /*
- * AJ Thus, Jack Bates
+ * AJ Thut, Jack Bates
  *
- * CS441/541: Project 3
  *
  */
 #include "mysh.h"
