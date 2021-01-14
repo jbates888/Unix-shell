@@ -1,13 +1,8 @@
-# CS441/541 Shell Project
+# Shell Project
 
 ## Author(s):
 
 Aj Thut, Jack Bates
-
-## Date:
-
-10/17/20
-
 
 ## Description:
 
@@ -42,27 +37,3 @@ Choose interactive mode by passing in no commands and enter them as the shell ru
 Can use file rederection using "<" or ">", put a process in the background with "&", and run more then one command on the same line with ";".
 
 Call "exit" to end the program
-
-
-
-## How the software was tested
-
-Self Made tests:
-
-Test1.txt: Basic tests to make sure we can parse a single or multiple commands on one line. 
-
-Test2.txt: Tests for file redirection. Also checks that we ignore blank lines.
-
-Test3.txt: Makes sure that builtin commands don't run in the background when the have an &.
-
-Test4.txt: Checks multiple commands on one line. Also checks the fg, wait, and jobs function to make sure our job t array is storing processes correctly.  
-
-Test5.txt: Another test with multiple commands on lines. Checks ignoring whitespace and lines with no commands. Also checks all builtin commands and makes sure they don't run in the background.  
-
-
-Tested with the given tests along with exta test files to cover more cases
-
-
-## Known bugs and problem areas
-
-TODO
