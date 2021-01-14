@@ -1,7 +1,4 @@
 /*
- * [YOUR NAME HERE]
- *
- * CS441/541: Project 3
  *
  */
 #ifndef MYSHELL_H
