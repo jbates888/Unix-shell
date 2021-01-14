@@ -1,6 +1,4 @@
 #
-# Josh Hursey
-#
 # Given set of correctness tests
 # Note: There will be more added when assessing your final grade.
 #       These tests are -not- comprehensive!
